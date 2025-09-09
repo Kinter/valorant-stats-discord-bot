@@ -1,0 +1,32 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# ---- 가상환경 ----
+.venv/
+env/
+venv/
+
+# ---- 환경변수/보안 ----
+.env
+
+# ---- 로그/캐시 ----
+*.log
+*.tmp
+*.swp
+*.bak
+*.DS_Store
+
+# ---- IDE/에디터 ----
+.vscode/
+.idea/
+*.code-workspace
+
+# ---- OS 파일 ----
+Thumbs.db
+desktop.ini
+
+# ---- Python
