@@ -29,9 +29,19 @@ LINKS_FILE  = DATA_DIR / "links.json"
 DATA_DIR.mkdir(exist_ok=True)
 if not LINKS_FILE.exists():
     LINKS_FILE.write_text("{}", encoding="utf-8")
+IMAGES_DIR  = Path("assets/tiers")
 
 # -------------------- 유틸 --------------------
 _session: Optional[aiohttp.ClientSession] = None
+
+# 이미지 매핑
+def tier_key(name: str) -> str:
+    """'Immortal 1' -> 'immortal1'"""
+    return (name or "").lower().replace(" ", "")
+
+def tier_image_path(name: str) -> Path:
+    """티어 이름을 파일 경로로 매핑: images/immortal1.png"""
+    return IMAGES_DIR / f"{tier_key(name)}.png"
 
 async def http_get(url: str, *, params: dict | None = None, headers: dict | None = None) -> dict:
     assert _session is not None
@@ -201,48 +211,100 @@ async def vagent(inter: discord.Interaction, name: str):
         await inter.followup.send("에이전트 없음"); return
     await inter.followup.send(found.get("displayName","Agent"))
 
-@bot.tree.command(name="vsummary", description="최근 전적 요약 (티어/승률/KD/멘트)")
+@bot.tree.command(name="vsummary", description="최근 전적 요약 (티어 이미지/승률/KD/멘트)")
+@app_commands.describe(count="최근 몇 판을 볼지 (1~10)")
 async def vsummary(inter: discord.Interaction, count: int = 10):
-    await inter.response.defer()
-    name, tag, region = await resolve_target(inter.user, None, None)
-    acc = await http_get(f"{HENRIK_BASE}/v1/account/{q(name)}/{q(tag)}")
-    puuid = (acc.get("data") or {}).get("puuid")
-    mmr = await http_get(f"{HENRIK_BASE}/v2/mmr/{region}/{q(name)}/{q(tag)}")
-    cur = (mmr.get("data") or {}).get("current_data") or {}
-    tier_name = cur.get("currenttierpatched") or "Unrated"
-    rr = cur.get("ranking_in_tier", 0)
-    emoji = TIER_EMOJI.get(tier_name, ":grey_question:")
+    # 쿨다운
+    if remain := check_cooldown(inter.user.id):
+        await inter.response.send_message(
+            f"잠시 후 재시도하십시오. {remain}초 남음", ephemeral=True
+        )
+        return
 
-    js = await fetch_matches(region, name, tag, size=count)
-    matches = (js.get("data") or [])
-    wins, losses = 0, 0
-    tot_k, tot_d = 0, 0
-    for m in matches:
-        players = ((m.get("players") or {}).get("all_players") or [])
-        my = next((p for p in players if p.get("puuid") == puuid), None)
-        if not my: continue
-        k,d,a = (my.get("stats") or {}).get("kills",0), (my.get("stats") or {}).get("deaths",0), (my.get("stats") or {}).get("assists",0)
-        tot_k += k; tot_d += d
-        team = my.get("team")
-        if team and isinstance(m.get("teams"), dict):
-            has_won = bool(m["teams"].get(team, {}).get("has_won"))
-            if has_won: wins+=1
-            else: losses+=1
-    total = wins+losses
-    winrate = (wins/total*100) if total else 0
-    kd = trunc2(tot_k/tot_d) if tot_d else float(tot_k)
-    if winrate >= 50 and kd >= 1: msg = "오~ 좀 잘하는데"
-    elif winrate >= 50 and kd < 1: msg = "오~ 버스 잘 타는데"
-    elif winrate <= 45 and kd >= 1: msg = "이걸 지고 있네 ㅋㅋㅋㅋ"
-    elif winrate <= 45 and kd < 1: msg = "개못하네 ㅋㅋㅋ 지는 이유가 있다"
-    else: msg = ""
-    out = (
-        f"{emoji}  {rr}RR\n"
-        f"{name}님의 최근 {total}판 전적 : {wins}승 {losses}패 ({winrate:.0f}%)\n"
-        f"KD : {kd:.2f}\n"
-        f"{msg}"
-    )
-    await inter.followup.send(out)
+    await inter.response.defer()
+
+    try:
+        # 1) 대상 계정/지역
+        name, tag, region = await resolve_target(inter.user, None, None)
+        safe_name, safe_tag = q(name), q(tag)
+
+        # 2) 내 puuid + 현재 티어/RR
+        acc = await http_get(f"{HENRIK_BASE}/v1/account/{safe_name}/{safe_tag}")
+        puuid = (acc.get("data") or {}).get("puuid")
+
+        mmr = await http_get(f"{HENRIK_BASE}/v2/mmr/{region}/{safe_name}/{safe_tag}")
+        cur = (mmr.get("data") or {}).get("current_data") or {}
+        tier_name = cur.get("currenttierpatched") or "Unrated"
+        rr = cur.get("ranking_in_tier", 0)
+
+        # 3) 최근 매치 (mode 공란 -> competitive 기본)
+        js = await fetch_matches(region, name, tag, mode=None, size=count)
+        matches = (js.get("data") or [])
+        if not matches:
+            await inter.followup.send("최근 전적이 없습니다.")
+            return
+
+        # 4) 승패/스탯 집계 (내 플레이어를 puuid로 매칭)
+        wins, losses = 0, 0
+        tot_k, tot_d = 0, 0
+        for m in matches:
+            players = ((m.get("players") or {}).get("all_players") or [])
+            my = next((p for p in players if p.get("puuid") == puuid), None)
+            if not my:
+                continue
+            s = my.get("stats") or {}
+            k, d, a = s.get("kills", 0), s.get("deaths", 0), s.get("assists", 0)
+            tot_k += k
+            tot_d += d
+
+            team = my.get("team")
+            if team and isinstance(m.get("teams"), dict):
+                has_won = bool(m["teams"].get(team, {}).get("has_won"))
+                if has_won: wins += 1
+                else:       losses += 1
+
+        total = wins + losses
+        winrate = (wins / total * 100) if total else 0
+        kd = trunc2(tot_k / tot_d) if tot_d else float(tot_k)
+
+        # 5) 조건별 멘트
+        if winrate >= 50 and kd >= 1:
+            msg = "오~ 좀 잘하는데"
+        elif winrate >= 50 and kd < 1:
+            msg = "오~ 버스 잘 타는데"
+        elif winrate <= 45 and kd >= 1:
+            msg = "이걸 지고 있네 ㅋㅋㅋㅋ"
+        elif winrate <= 45 and kd < 1:
+            msg = "개못하네 ㅋㅋㅋ 지는 이유가 있다"
+        else:
+            msg = ""
+
+        # 6) 임베드 + 티어 이미지(assets/tiers/<키>.png)
+        from pathlib import Path
+        images_dir = Path("assets/tiers")
+        filename = (tier_name or "Unrated").lower().replace(" ", "") + ".png"  # 예: "Immortal 1" -> "immortal1.png"
+        img_path = images_dir / filename
+
+        embed = discord.Embed(
+            title=f"{tier_name} {rr}RR",
+            description=(
+                f"{name}님의 최근 {total}판 전적 : {wins}승 {losses}패 ({winrate:.0f}%)\n"
+                f"KD : {kd:.2f}\n"
+                f"{msg}"
+            ),
+            color=discord.Color.red()
+        )
+
+        if img_path.exists():
+            file = discord.File(img_path, filename=img_path.name)
+            embed.set_thumbnail(url=f"attachment://{img_path.name}")
+            await inter.followup.send(embed=embed, file=file)
+        else:
+            # 이미지가 없어도 메시지는 나가게 처리
+            await inter.followup.send(embed=embed)
+
+    except Exception as e:
+        await inter.followup.send(f"오류: {e}")
 
 # -------------------- 실행 --------------------
 if __name__ == "__main__":
