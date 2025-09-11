@@ -18,41 +18,6 @@ DISCORD_TOKEN   = os.getenv("DISCORD_TOKEN")
 GUILD_ID        = os.getenv("GUILD_ID")
 HENRIK_API_KEY  = os.getenv("HENRIK_API_KEY")
 
-TIER_EMOJI = {
-    "Radiant": ":radiant:",
-    "Immortal 1": ":immortal1:",
-    "Immortal 2": ":immortal2:",
-    "Immortal 3": ":immortal3:",
-    "Ascendant 1": ":ascendant1:",
-    "Ascendant 2": ":ascendant2:",
-    "Ascendant 3": ":ascendant3:",
-    "Diamond 1": ":diamond1:",
-    "Diamond 2": ":diamond2:",
-    "Diamond 3": ":diamond3:",
-    "Diamond 4": ":diamond4:",
-    "Platinum 1": ":platinum1:",
-    "Platinum 2": ":platinum2:",
-    "Platinum 3": ":platinum3:",
-    "Platinum 4": ":platinum4:",
-    "Gold 1": ":gold1:",
-    "Gold 2": ":gold2:",
-    "Gold 3": ":gold3:",
-    "Gold 4": ":gold4:",
-    "Silver 1": ":silver1:",
-    "Silver 2": ":silver2:",
-    "Silver 3": ":silver3:",
-    "Silver 4": ":silver4:",
-    "Bronze 1": ":bronze1:",
-    "Bronze 2": ":bronze2:",
-    "Bronze 3": ":bronze3:",
-    "Bronze 4": ":bronze4:",
-    "Iron 1": ":iron1:",
-    "Iron 2": ":iron2:",
-    "Iron 3": ":iron3:",
-    "Iron 4": ":iron4:",
-    "Unrated": ":unrated:",
-}
-
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
