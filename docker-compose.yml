@@ -1,0 +1,11 @@
+services:
+  app:
+    container_name: kiin_discord_bot
+    build: .
+    restart: unless-stopped
+    environment:
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - GUILD_ID=${GUILD_ID}
+      - HENRIK_API_KEY=${HENRIK_API_KEY}
+    volumes:
+      - ./data:/app/data
