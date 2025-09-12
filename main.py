@@ -105,24 +105,27 @@ def trunc2(x: float) -> float:
 # -------------------- 봇 이벤트 --------------------
 @bot.event
 async def on_ready():
+    # HTTP 세션 준비
     global _session
     if _session is None:
         _session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=12))
-    names = [c.name for c in bot.tree.get_commands()]
-    print(f"[DEBUG] commands in tree = {len(names)} -> {names}")
+
+    # 전역 슬래시 동기화 (모든 서버에 배포 / 전파 지연 가능)
     try:
-        if GUILD_ID and GUILD_ID.isdigit():
-            guild = discord.Object(id=int(GUILD_ID))
-            bot.tree.clear_commands(guild=guild)
-            bot.tree.copy_global_to(guild=guild)
-            synced = await bot.tree.sync(guild=guild)
-            print(f"[SYNC] {GUILD_ID} 길드에 {len(synced)}개 슬래시 명령 동기화")
-        else:
-            synced = await bot.tree.sync()
-            print(f"[SYNC] 전역에 {len(synced)}개 동기화")
+        synced = await bot.tree.sync()
+        print(f"[SYNC] 전역에 {len(synced)}개 슬래시 명령 동기화 (전파 지연 최대 1시간)")
     except Exception as e:
         print("[SYNC ERROR]", e)
+
+    # 연결된 길드(서버) 로그
+    print(f"[GUILDS] 현재 연결된 서버 수: {len(bot.guilds)}")
+    for g in bot.guilds:
+        # member_count는 Privileged Intents 없이도 대략적 수치가 들어오는 경우가 있으나 None일 수 있음
+        mcount = g.member_count if getattr(g, "member_count", None) else "?"
+        print(f" - {g.name} (ID: {g.id}) members≈{mcount}")
+
     print(f"로그인: {bot.user} (ID: {bot.user.id})")
+
 
 async def close_session():
     global _session
