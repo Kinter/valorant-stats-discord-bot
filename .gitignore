@@ -28,6 +28,7 @@ venv/
 # ---- OS 파일 ----
 Thumbs.db
 desktop.ini
+activate.ps1
 
 # ---- Python
 
