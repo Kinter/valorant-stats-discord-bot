@@ -15,7 +15,6 @@ from dotenv import load_dotenv
 # -------------------- 환경 --------------------
 load_dotenv()
 DISCORD_TOKEN   = os.getenv("DISCORD_TOKEN")
-GUILD_ID        = os.getenv("GUILD_ID")
 HENRIK_API_KEY  = os.getenv("HENRIK_API_KEY")
 
 intents = discord.Intents.default()
