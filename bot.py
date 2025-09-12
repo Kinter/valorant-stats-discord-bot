@@ -16,10 +16,10 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 COGS = [
     "cogs.link",
     "cogs.summary",
-    # "cogs.profile",
-    # "cogs.matches",
-    # "cogs.agent",
-    # "cogs.admin",
+    "cogs.profile",
+    "cogs.matches",
+    "cogs.agent",
+    "cogs.admin",
 ]
 
 @bot.event
