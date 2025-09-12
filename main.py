@@ -134,14 +134,23 @@ async def close_session():
         _session = None
 
 # -------------------- Commands --------------------
-@bot.tree.command(name="resync", description="슬래시 명령 재동기화")
+@bot.tree.command(name="resync", description="슬래시 명령 전역 재동기화(소유자 전용)")
 async def resync(inter: discord.Interaction):
+    app = await bot.application_info()
+    if inter.user.id != app.owner.id:
+        await inter.response.send_message("권한 없음", ephemeral=True)
+        return
+
     await inter.response.defer(ephemeral=True)
-    guild = discord.Object(id=int(GUILD_ID))
-    bot.tree.clear_commands(guild=guild)
-    bot.tree.copy_global_to(guild=guild)
-    synced = await bot.tree.sync(guild=guild)
-    await inter.followup.send(f"길드 동기화 완료: {len(synced)}개", ephemeral=True)
+    try:
+        synced = await bot.tree.sync()
+        await inter.followup.send(
+            f"전역 동기화 완료: {len(synced)}개 (전파 지연 최대 1시간)",
+            ephemeral=True
+        )
+    except Exception as e:
+        await inter.followup.send(f"동기화 오류: {e}", ephemeral=True)
+
 
 @bot.tree.command(name="link", description="본인 Riot ID를 연결")
 @app_commands.describe(name="Riot ID 이름", tag="Riot ID 태그", region="ap/kr/eu/na 등")
