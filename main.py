@@ -133,6 +133,15 @@ async def close_session():
         await _session.close()
         _session = None
 
+# 출입국 로그        
+@bot.event
+async def on_guild_join(guild: discord.Guild):
+    print(f"[GUILD JOIN] {guild.name} (ID: {guild.id})")
+
+@bot.event
+async def on_guild_remove(guild: discord.Guild):
+    print(f"[GUILD REMOVE] {guild.name} (ID: {guild.id})")
+
 # -------------------- Commands --------------------
 @bot.tree.command(name="resync", description="슬래시 명령 전역 재동기화(소유자 전용)")
 async def resync(inter: discord.Interaction):
@@ -150,7 +159,6 @@ async def resync(inter: discord.Interaction):
         )
     except Exception as e:
         await inter.followup.send(f"동기화 오류: {e}", ephemeral=True)
-
 
 @bot.tree.command(name="link", description="본인 Riot ID를 연결")
 @app_commands.describe(name="Riot ID 이름", tag="Riot ID 태그", region="ap/kr/eu/na 등")
