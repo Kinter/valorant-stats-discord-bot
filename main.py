@@ -286,9 +286,9 @@ async def vsummary(inter: discord.Interaction, count: int = 10):
         img_path = images_dir / filename
 
         embed = discord.Embed(
-            title=f"{tier_name} {rr}RR",
+            title=f"{name} : {tier_name} {rr}RR",
             description=(
-                f"{name}님의 최근 {total}판 전적 : {wins}승 {losses}패 ({winrate:.0f}%)\n"
+                f"최근 {total}판 전적 : {wins}승 {losses}패 ({winrate:.0f}%)\n"
                 f"KD : {kd:.2f}\n"
                 f"{msg}"
             ),
