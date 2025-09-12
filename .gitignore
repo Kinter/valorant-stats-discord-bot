@@ -30,3 +30,9 @@ Thumbs.db
 desktop.ini
 
 # ---- Python
+
+# ---- db, assets ----
+/data/*
+!/data/
+!/data/.gitkeep
+echo "" > data/.gitkeep
