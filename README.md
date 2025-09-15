@@ -80,7 +80,7 @@ discord_bot/
 
 ## ✅ TODO
 
-- [ ] Refactor code into `cogs/` modules
+- [x] Refactor code into `cogs/` modules
 - [ ] Improve `/vmatches` output (highlight W/L)
 - [ ] Add KD / win rate graphs
 - [ ] Add `/agentstats`, `/compare` commands
