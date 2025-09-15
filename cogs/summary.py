@@ -137,19 +137,21 @@ class SummaryCog(commands.Cog):
 
             # 본문
             mode_label = (gamemode.name if gamemode else "경쟁(기본)")
+
             desc = (
-                f"모드: **{mode_label}**\n"
-                f"**{name}** recent **{total}**: **{wins}W {losses}L** (**{winrate:.0f}%**)\n"
-                f"**KD : {kd:.2f}**\n"
-                f"**{msg}**" if msg else
-                f"모드: **{mode_label}**\n"
-                f"**{name}** recent **{total}**: **{wins}W {losses}L** (**{winrate:.0f}%**)\n"
-                f"**KD : {kd:.2f}**"
+               f"모드: **{mode_label}**\n"
+               f"**{tier_name} {rr}RR**\n"
+               f"최근 {total}판: **{wins}W {losses}L** (**{winrate:.0f}%**)\n"
+               f"KD : **{kd:.2f}**\n"
             )
+
+            if msg:
+                desc += f"{msg}\n"
+
             diff_block = f"\n```diff\n+ W {wins}\n- L {losses}\n```"
 
             embed = discord.Embed(
-                title=f"{tier_name} {rr}RR",
+                title=f"{name}#{tag}",
                 description=desc + diff_block,
                 color=color
             )
