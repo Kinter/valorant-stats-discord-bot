@@ -10,7 +10,7 @@ This project is **unofficial** and uses the [HenrikDev API](https://docs.henrikd
 ## ✨ Features
 
 - `/link` : Link your Riot ID to the bot
-- `/unlink` : Unlink Riot ID
+- `/unlink` : Unlink Riot ID (not working now, just link new profile what you want to see)
 - `/vprofile` : View profile and MMR of the linked Riot ID
 - `/vmatches` : Show recent matches with map/mode/W-L/KDA summary
 - `/vsummary` : Show summarized stats (win rate, KD, tier image, fun comment)
