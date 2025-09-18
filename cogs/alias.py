@@ -10,7 +10,10 @@ from discord.ext import commands
 from core import config
 
 _links_lock = asyncio.Lock()
-RIOT_ID_RE = re.compile(r"^[^#\s]{2,16}#[A-Za-z0-9]{3,5}$")
+
+# Allow any Unicode characters for the tag part (3–5 chars), excluding whitespace and '#'.
+# Name part: 2–16 chars, cannot include whitespace or '#'.
+RIOT_ID_RE = re.compile(r"^[^#\s]{2,16}#[^\s#]{3,5}$")
 
 
 def _load_links() -> dict[str, dict[str, str]]:
@@ -19,7 +22,7 @@ def _load_links() -> dict[str, dict[str, str]]:
     try:
         data = json.loads(config.LINKS_FILE.read_text(encoding="utf-8"))
         if isinstance(data, dict):
-            return data  # { guild_id: { alias: riot_id } }
+            return data
     except Exception:
         pass
     return {}
@@ -57,16 +60,17 @@ class Alias(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    # 등록 (add / upsert)
     @app_commands.command(name="등록", description="RiotID#Tag 를 별명으로 등록합니다.")
     @app_commands.describe(
-        riot_id="예: 이름#KR1",
+        riot_id="예: 이름#KR1 (태그는 한국어/일본어 등 모든 언어 가능)",
         nickname="생략 시 RiotID 전체 문자열을 별명으로 사용",
     )
     async def add(self, interaction: Interaction, riot_id: str, nickname: str | None = None):
         if not RIOT_ID_RE.match(riot_id):
             await interaction.response.send_message(
-                "❌ 형식이 올바르지 않습니다. 예: `Player#KR1` (이름: 2~16자, 태그: 3~5자 영숫자)",
+                "❌ 형식이 올바르지 않습니다. 예: `Player#KR1`\n"
+                "- 이름: 공백/`#` 제외 2~16자\n"
+                "- 태그: 공백/`#` 제외 3~5자 (한국어/일본어 등 모든 언어 허용)",
                 ephemeral=True,
             )
             return
@@ -84,7 +88,6 @@ class Alias(commands.Cog):
             f"✅ 등록 완료: `{alias}` → `{riot_id}`", ephemeral=True
         )
 
-    # 삭제
     @app_commands.command(name="별명삭제", description="등록한 별명을 삭제합니다.")
     @app_commands.describe(nickname="삭제할 별명")
     @app_commands.autocomplete(nickname=_autocomplete_alias)
@@ -106,14 +109,13 @@ class Alias(commands.Cog):
             f"🗑️ 삭제 완료: `{nickname}` (기존 `{removed}`)", ephemeral=True
         )
 
-    # 목록
     @app_commands.command(name="별명목록", description="이 서버의 등록된 별명을 모두 보여줍니다.")
     async def list_aliases(self, interaction: Interaction):
         guild_id = str(interaction.guild_id)
         data = _load_links()
         mapping = data.get(guild_id, {})
         if not mapping:
-            await interaction.response.send_message("ℹ️ 등록된 별명이 없습니다.", ephemeral=True)
+            await interaction.response.send_message("ℹ️ 등록된 별명이 없습니다.")
             return
 
         items = [_format_alias_row(a, r) for a, r in mapping.items()]
@@ -123,7 +125,6 @@ class Alias(commands.Cog):
             text += f"\n… 외 {len(items) - 50}개"
         await interaction.response.send_message(text)
 
-    # 조회
     @app_commands.command(name="별명조회", description="별명에 매핑된 RiotID를 보여줍니다.")
     @app_commands.describe(nickname="조회할 별명")
     @app_commands.autocomplete(nickname=_autocomplete_alias)
