@@ -1,9 +1,11 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from core.utils import check_cooldown
+
+from core.utils import check_cooldown, clean_text
 from core.http import http_get
 from core.config import VAL_ASSET
+
 
 class AgentCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -16,11 +18,19 @@ class AgentCog(commands.Cog):
             await inter.response.send_message(f"Retry later. {remain}s left", ephemeral=True)
             return
 
+        name = clean_text(name)
+        if not name:
+            await inter.response.send_message("Agent name cannot be empty.", ephemeral=True)
+            return
+
         await inter.response.defer()
         try:
             agents = await http_get(f"{VAL_ASSET}/agents", params={"isPlayableCharacter": "true"})
             arr = agents.get("data") or []
-            found = next((a for a in arr if a.get("displayName", "").lower() == name.lower()), None)
+            found = next(
+                (a for a in arr if clean_text(a.get("displayName", "")).lower() == name.lower()),
+                None,
+            )
             if not found:
                 await inter.followup.send("Agent not found.")
                 return
@@ -28,17 +38,20 @@ class AgentCog(commands.Cog):
             embed = discord.Embed(
                 title=found.get("displayName", "Agent"),
                 description=found.get("description", ""),
-                color=discord.Color.green()
+                color=discord.Color.green(),
             )
             icon = found.get("displayIconSmall") or found.get("displayIcon")
-            if icon: embed.set_thumbnail(url=icon)
+            if icon:
+                embed.set_thumbnail(url=icon)
             role = (found.get("role") or {}).get("displayName", "")
-            if role: embed.add_field(name="Role", value=role)
+            if role:
+                embed.add_field(name="Role", value=role)
 
             await inter.followup.send(embed=embed)
 
         except Exception as e:
             await inter.followup.send(f"Error: {e}")
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(AgentCog(bot))

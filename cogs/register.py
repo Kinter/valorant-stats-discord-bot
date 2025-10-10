@@ -7,11 +7,7 @@ from discord.ext import commands
 from core.config import HENRIK_BASE
 from core.http import http_get
 from core.store import get_alias, list_aliases, remove_alias, upsert_alias
-from core.utils import check_cooldown, norm_region, q
-
-
-def _clean_alias(alias: str) -> str:
-    return alias.strip()
+from core.utils import check_cooldown, clean_text, norm_region, q
 
 
 class RegisterCog(commands.Cog):
@@ -33,19 +29,24 @@ class RegisterCog(commands.Cog):
         tag: str,
         region: Optional[str] = None,
     ):
-        alias = _clean_alias(alias)
+        alias = clean_text(alias)
+        name = clean_text(name)
+        tag = clean_text(tag)
+        region = norm_region(region or "ap")
         if not alias:
             await inter.response.send_message("Alias cannot be empty.", ephemeral=True)
             return
         if len(alias) > 32:
             await inter.response.send_message("Alias must be 32 characters or fewer.", ephemeral=True)
             return
+        if not name or not tag:
+            await inter.response.send_message("Name and tag must not be empty.", ephemeral=True)
+            return
 
         if remain := check_cooldown(inter.user.id):
             await inter.response.send_message(f"Retry later. {remain}s left", ephemeral=True)
             return
 
-        region = norm_region(region or "ap")
         await inter.response.defer(ephemeral=True)
         try:
             acc = await http_get(f"{HENRIK_BASE}/v1/account/{q(name)}/{q(tag)}")
@@ -57,14 +58,14 @@ class RegisterCog(commands.Cog):
                 raise RuntimeError("Puuid missing in HenrikDev response")
 
             upsert_alias(alias, name, tag, region, puuid)
-            await inter.followup.send(f"Registered **{alias}** → **{name}#{tag}** ({region.upper()})", ephemeral=True)
+            await inter.followup.send(f"Registered **{alias}** -> **{name}#{tag}** ({region.upper()})", ephemeral=True)
         except Exception as e:
             await inter.followup.send(f"Failed: {e}", ephemeral=True)
 
     @app_commands.command(name="unregister", description="Remove a player alias")
     @app_commands.describe(alias="Alias to remove")
     async def unregister(self, inter: discord.Interaction, alias: str):
-        alias = _clean_alias(alias)
+        alias = clean_text(alias)
         if not alias:
             await inter.response.send_message("Alias cannot be empty.", ephemeral=True)
             return
@@ -92,7 +93,7 @@ class RegisterCog(commands.Cog):
             return
 
         lines = [
-            f"• **{rec['alias']}** → {rec['name']}#{rec['tag']} ({rec['region'].upper()})"
+            f"- **{rec['alias']}** -> {rec['name']}#{rec['tag']} ({rec['region'].upper()})"
             for rec in records
         ]
         await inter.response.send_message("\n".join(lines), ephemeral=True)
@@ -100,4 +101,3 @@ class RegisterCog(commands.Cog):
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(RegisterCog(bot))
-

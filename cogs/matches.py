@@ -1,5 +1,5 @@
-from typing import Optional
 import logging
+from typing import Optional
 
 import discord
 from discord import app_commands
@@ -8,7 +8,7 @@ from discord.ext import commands
 from core.config import HENRIK_BASE
 from core.http import http_get
 from core.store import get_alias, get_link, store_match_batch
-from core.utils import check_cooldown, q
+from core.utils import check_cooldown, clean_text, q
 
 
 class MatchesCog(commands.Cog):
@@ -42,7 +42,7 @@ class MatchesCog(commands.Cog):
 
         count = max(1, min(10, count))
 
-        alias_input = (target or "").strip() if target else ""
+        alias_input = clean_text(target)
         owner_key = f"user:{inter.user.id}"
         if alias_input:
             alias_info = get_alias(alias_input)
@@ -59,6 +59,9 @@ class MatchesCog(commands.Cog):
                 await inter.response.send_message("not linking", ephemeral=True)
                 return
             name, tag, region = resolved
+
+        mode = clean_text(mode)
+        map = clean_text(map)
 
         await inter.response.defer()
         try:

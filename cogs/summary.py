@@ -5,7 +5,7 @@ from discord.ext import commands
 from core.config import HENRIK_BASE, TIERS_DIR
 from core.http import http_get
 from core.store import get_alias, get_link, store_match_batch
-from core.utils import check_cooldown, q, tier_key, trunc2
+from core.utils import check_cooldown, clean_text, q, tier_key, trunc2
 
 async def fetch_matches(region: str, name: str, tag: str, *, mode: Optional[str], size: int) -> dict:
     # mode 공란이면 competitive
@@ -36,7 +36,7 @@ class SummaryCog(commands.Cog):
             await inter.response.send_message(f"Retry later. {remain}s left", ephemeral=True)
             return
 
-        alias_input = (target or "").strip() if target else ""
+        alias_input = clean_text(target)
         owner_key = f"user:{inter.user.id}"
         if alias_input:
             alias_info = get_alias(alias_input)
