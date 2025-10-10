@@ -23,7 +23,7 @@ DATA_DIR   = ROOT_DIR / "data"
 ASSETS_DIR = ROOT_DIR / "assets"
 TIERS_DIR  = ASSETS_DIR / "tiers"
 
-LINKS_FILE = DATA_DIR / "links.json"
+DB_FILE = DATA_DIR / "links.sqlite3"
 
 # ── Bootstrap helper (no side-effects at import time) ─────────────────────────
 
@@ -34,5 +34,6 @@ def bootstrap_fs() -> None:
     DATA_DIR.mkdir(exist_ok=True)
     ASSETS_DIR.mkdir(exist_ok=True)
     TIERS_DIR.mkdir(exist_ok=True)
-    if not LINKS_FILE.exists():
-        LINKS_FILE.write_text("{}", encoding="utf-8")
+    from .store import bootstrap_db
+
+    bootstrap_db()
