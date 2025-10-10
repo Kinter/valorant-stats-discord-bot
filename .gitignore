@@ -1,39 +1,34 @@
-# ---- Python ----
+# --- Python / venv ---
+.venv/
+venv/
 __pycache__/
 *.py[cod]
-*.pyo
-*.pyd
-*.so
-
-# ---- 가상환경 ----
-.venv/
-env/
-venv/
-
-# ---- 환경변수/보안 ----
-.env
-
-# ---- 로그/캐시 ----
-*.log
-*.tmp
-*.swp
-*.bak
-*.DS_Store
-
-# ---- IDE/에디터 ----
-.vscode/
-.idea/
-*.code-workspace
-
-# ---- OS 파일 ----
-Thumbs.db
-desktop.ini
+*.egg-info/
+dist/
+build/
+.pytest_cache/
 activate.ps1
 
-# ---- Python
+# --- Editor / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
 
-# ---- db, assets ----
-/data/*
-!/data/
-!/data/.gitkeep
-echo "" > data/.gitkeep
+# --- Env / Secrets ---
+.env
+
+# --- SQLite (DB 본문 & 저널 파일) ---
+data/*.sqlite3
+*.sqlite3
+*.sqlite
+*.db
+*.db-wal
+*.db-shm
+*.sqlite-wal
+*.sqlite-shm
+
+# --- Patch / Rejects ---
+patch.diff
+*.patch
+*.rej
