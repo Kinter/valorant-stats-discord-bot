@@ -37,3 +37,8 @@ def alias_display(info: Dict[str, Any]) -> str:
     tag = clean_text(info.get("tag", ""))
     label = f"{alias} ({name}#{tag})" if alias else f"{name}#{tag}"
     return label if len(label) <= 100 else (label[:97] + "...")
+
+
+def is_account_not_found_error(error: Exception) -> bool:
+    message = str(error) if error else ""
+    return "Account not found" in message
