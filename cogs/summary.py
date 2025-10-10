@@ -1,11 +1,10 @@
 from typing import Optional
-from pathlib import Path
 import discord
 from discord import app_commands
 from discord.ext import commands
 from core.config import HENRIK_BASE, TIERS_DIR
 from core.http import http_get
-from core.store import get_link
+from core.store import get_alias, get_link, store_match_batch
 from core.utils import check_cooldown, q, tier_key, trunc2
 
 async def fetch_matches(region: str, name: str, tag: str, *, mode: Optional[str], size: int) -> dict:
@@ -25,8 +24,11 @@ class SummaryCog(commands.Cog):
         return info["name"], info["tag"], info.get("region", "ap")
 
     @app_commands.command(name="vsummary", description="Recent summary (tier image / WR / KD / comment)")
-    @app_commands.describe(count="1~10, empty=10")
-    async def vsummary(self, inter: discord.Interaction, count: Optional[int] = None):
+    @app_commands.describe(
+        count="1~10, empty=10",
+        target="Registered alias to inspect (empty = your linked account)",
+    )
+    async def vsummary(self, inter: discord.Interaction, count: Optional[int] = None, target: Optional[str] = None):
         if count is None:
             count = 10
         count = max(1, min(10, count))
@@ -34,17 +36,30 @@ class SummaryCog(commands.Cog):
             await inter.response.send_message(f"Retry later. {remain}s left", ephemeral=True)
             return
 
-        target = self._resolve_target(inter.user.id)
-        if target is None:
-            await inter.response.send_message("not linking", ephemeral=True)
-            return
-
-        name, tag, region = target
+        alias_input = (target or "").strip() if target else ""
+        owner_key = f"user:{inter.user.id}"
+        if alias_input:
+            alias_info = get_alias(alias_input)
+            if not alias_info:
+                await inter.response.send_message(f"Alias `{alias_input}` not found.", ephemeral=True)
+                return
+            name = alias_info["name"]
+            tag = alias_info["tag"]
+            region = alias_info.get("region", "ap")
+            owner_key = f"alias:{alias_info['alias_norm']}"
+        else:
+            resolved = self._resolve_target(inter.user.id)
+            if resolved is None:
+                await inter.response.send_message("not linking", ephemeral=True)
+                return
+            name, tag, region = resolved
         await inter.response.defer()
         try:
 
             acc = await http_get(f"{HENRIK_BASE}/v1/account/{q(name)}/{q(tag)}")
             puuid = (acc.get("data") or {}).get("puuid")
+            if not puuid:
+                raise RuntimeError("Puuid missing in HenrikDev response")
 
             mmr = await http_get(f"{HENRIK_BASE}/v2/mmr/{region}/{q(name)}/{q(tag)}")
             cur = (mmr.get("data") or {}).get("current_data") or {}
@@ -75,6 +90,12 @@ class SummaryCog(commands.Cog):
             total = wins + losses
             winrate = (wins/total*100) if total else 0
             kd = trunc2(tot_k/tot_d) if tot_d else float(tot_k)
+
+            try:
+                store_match_batch(owner_key, puuid, matches)
+            except Exception as store_err:
+                import logging
+                logging.getLogger(__name__).warning("Failed to persist match cache: %s", store_err, exc_info=True)
 
             if winrate >= 50 and kd >= 1: msg = "오~ 좀 잘하는데"
             elif winrate >= 50 and kd < 1: msg = "오~ 버스 잘 타는데"

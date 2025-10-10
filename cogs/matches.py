@@ -1,37 +1,77 @@
+from typing import Optional
+import logging
+
 import discord
 from discord import app_commands
 from discord.ext import commands
-from typing import Optional
-from core.utils import check_cooldown, q
-from core.http import http_get
-from core.store import get_link
+
 from core.config import HENRIK_BASE
+from core.http import http_get
+from core.store import get_alias, get_link, store_match_batch
+from core.utils import check_cooldown, q
+
 
 class MatchesCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    def _resolve_target(self, user_id: int):
+    def _resolve_self(self, user_id: int) -> Optional[tuple[str, str, str]]:
         info = get_link(user_id)
         if not info:
-            raise RuntimeError("No linked Riot ID. Use /link first.")
+            return None
         return info["name"], info["tag"], info.get("region", "ap")
 
     @app_commands.command(name="vmatches", description="Recent matches with K/D/A summary")
-    @app_commands.describe(count="Number of matches (1–10)", mode="Game mode filter", map="Map filter")
-    async def vmatches(self, inter: discord.Interaction, count: int = 5, mode: Optional[str] = None, map: Optional[str] = None):
+    @app_commands.describe(
+        count="Number of matches (1~10)",
+        mode="Game mode filter",
+        map="Map filter",
+        target="Registered alias to inspect (empty = your linked account)",
+    )
+    async def vmatches(
+        self,
+        inter: discord.Interaction,
+        count: int = 5,
+        mode: Optional[str] = None,
+        map: Optional[str] = None,
+        target: Optional[str] = None,
+    ):
         if remain := check_cooldown(inter.user.id):
             await inter.response.send_message(f"Retry later. {remain}s left", ephemeral=True)
             return
 
+        count = max(1, min(10, count))
+
+        alias_input = (target or "").strip() if target else ""
+        owner_key = f"user:{inter.user.id}"
+        if alias_input:
+            alias_info = get_alias(alias_input)
+            if not alias_info:
+                await inter.response.send_message(f"Alias `{alias_input}` not found.", ephemeral=True)
+                return
+            name = alias_info["name"]
+            tag = alias_info["tag"]
+            region = alias_info.get("region", "ap")
+            owner_key = f"alias:{alias_info['alias_norm']}"
+        else:
+            resolved = self._resolve_self(inter.user.id)
+            if resolved is None:
+                await inter.response.send_message("not linking", ephemeral=True)
+                return
+            name, tag, region = resolved
+
         await inter.response.defer()
         try:
-            name, tag, region = self._resolve_target(inter.user.id)
             acc = await http_get(f"{HENRIK_BASE}/v1/account/{q(name)}/{q(tag)}")
             puuid = (acc.get("data") or {}).get("puuid")
-            params = {"size": str(max(1, min(10, count)))}
-            if mode: params["mode"] = mode
-            if map: params["map"] = map
+            if not puuid:
+                raise RuntimeError("Puuid missing in HenrikDev response")
+
+            params = {"size": str(count)}
+            if mode:
+                params["mode"] = mode
+            if map:
+                params["map"] = map
 
             js = await http_get(f"{HENRIK_BASE}/v3/matches/{region}/{q(name)}/{q(tag)}", params=params)
             matches = (js.get("data") or [])
@@ -39,27 +79,35 @@ class MatchesCog(commands.Cog):
                 await inter.followup.send("No recent matches.")
                 return
 
+            try:
+                store_match_batch(owner_key, puuid, matches)
+            except Exception as store_err:
+                logging.getLogger(__name__).warning("Failed to persist match cache: %s", store_err, exc_info=True)
+
             lines = []
-            for m in matches:
-                meta = m.get("metadata", {})
-                mapn = meta.get("map", "?")
-                modep = meta.get("mode", "?")
+            for match in matches:
+                metadata = match.get("metadata", {})
+                map_name = metadata.get("map", "?")
+                mode_name = metadata.get("mode", "?")
 
-                my = next((p for p in (m.get("players", {}).get("all_players") or []) if p.get("puuid") == puuid), None)
-                stats = (my or {}).get("stats", {})
-                k, d, a = stats.get("kills", 0), stats.get("deaths", 0), stats.get("assists", 0)
+                all_players = (match.get("players") or {}).get("all_players") or []
+                me = next((p for p in all_players if p.get("puuid") == puuid), None)
+                stats = (me or {}).get("stats") or {}
+                k = stats.get("kills", 0)
+                d = stats.get("deaths", 0)
+                a = stats.get("assists", 0)
 
-                team = my.get("team") if my else None
-                res = "—"
-                if team and isinstance(m.get("teams"), dict):
-                    res = "Win" if m["teams"].get(team, {}).get("has_won") else "Lose"
+                result = "?"
+                team = me.get("team") if me else None
+                if team and isinstance(match.get("teams"), dict):
+                    result = "Win" if match["teams"].get(team, {}).get("has_won") else "Lose"
 
-                lines.append(f"{mapn} / {modep} • {res} • {k}/{d}/{a}")
+                lines.append(f"{map_name} / {mode_name} · {result} · {k}/{d}/{a}")
 
-            await inter.followup.send("**Recent Matches**\n" + "\n".join(f"- {t}" for t in lines))
-
+            await inter.followup.send("**Recent Matches**\n" + "\n".join(f"- {line}" for line in lines))
         except Exception as e:
             await inter.followup.send(f"Error: {e}")
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(MatchesCog(bot))

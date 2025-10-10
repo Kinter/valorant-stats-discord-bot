@@ -4,7 +4,7 @@ from discord import app_commands
 from discord.ext import commands
 from core.utils import check_cooldown, q
 from core.http import http_get
-from core.store import get_link
+from core.store import get_alias, get_link
 from core.config import HENRIK_BASE
 
 class ProfileCog(commands.Cog):
@@ -18,17 +18,27 @@ class ProfileCog(commands.Cog):
         return info["name"], info["tag"], info.get("region", "ap")
 
     @app_commands.command(name="vprofile", description="View profile and MMR of linked Riot ID")
-    async def vprofile(self, inter: discord.Interaction):
+    @app_commands.describe(target="Registered alias to inspect (empty = your linked account)")
+    async def vprofile(self, inter: discord.Interaction, target: Optional[str] = None):
         if remain := check_cooldown(inter.user.id):
             await inter.response.send_message(f"Retry later. {remain}s left", ephemeral=True)
             return
 
-        target = self._resolve_target(inter.user.id)
-        if target is None:
-            await inter.response.send_message("not linking", ephemeral=True)
-            return
-
-        name, tag, region = target
+        alias_input = (target or "").strip() if target else ""
+        if alias_input:
+            alias_info = get_alias(alias_input)
+            if not alias_info:
+                await inter.response.send_message(f"Alias `{alias_input}` not found.", ephemeral=True)
+                return
+            name = alias_info["name"]
+            tag = alias_info["tag"]
+            region = alias_info.get("region", "ap")
+        else:
+            resolved = self._resolve_target(inter.user.id)
+            if resolved is None:
+                await inter.response.send_message("not linking", ephemeral=True)
+                return
+            name, tag, region = resolved
         await inter.response.defer()
         try:
             acc = await http_get(f"{HENRIK_BASE}/v1/account/{q(name)}/{q(tag)}")

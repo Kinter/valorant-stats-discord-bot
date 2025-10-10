@@ -11,8 +11,10 @@ This project is **unofficial** and uses the [HenrikDev API](https://docs.henrikd
 
 - `/link` : Link your Riot ID to the bot
 - `/unlink` : Unlink Riot ID
-- `/vprofile` : View profile and MMR of the linked Riot ID
-- `/vmatches` : Show recent matches with map/mode/W-L/KDA summary
+- `/register` : Register a Riot ID under a shared alias
+- `/aliases` : List registered aliases
+- `/vprofile` : View profile and MMR of the linked Riot ID (or a registered alias)
+- `/vmatches` : Show recent matches with map/mode/W-L/KDA summary (supports aliases)
 - `/vsummary` : Show summarized stats (win rate, KD, tier image, fun comment)
 - `/vagent` : Get information about agents
 - `/resync` : Force resync of slash commands (owner only)
@@ -63,6 +65,11 @@ Set `LOG_LEVEL=DEBUG` if you need more verbose console logs while running the bo
 ```bash
 python -m bot
 ```
+
+### 6. Register shared aliases (optional)
+Use `/register alias name tag region` in Discord to store a Riot ID under a friendly alias.  
+Once registered, pass that alias to `/vsummary`, `/vprofile`, or `/vmatches` via the `target` option.  
+Each fetch caches the latest match data in `data/bot.sqlite3` for later inspection.
 
 ---
 

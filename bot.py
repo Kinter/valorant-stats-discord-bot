@@ -45,6 +45,7 @@ def _describe_context(user: discord.abc.User, guild: Optional[discord.Guild]) ->
 
 COGS = [
     "cogs.link",
+    "cogs.register",
     "cogs.summary",
     "cogs.profile",
     "cogs.matches",
