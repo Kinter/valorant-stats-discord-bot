@@ -1,10 +1,10 @@
-from typing import Optional
+from typing import Optional, List
 import discord
 from discord import app_commands
 from discord.ext import commands
-from core.utils import check_cooldown, clean_text, q
+from core.utils import alias_display, check_cooldown, clean_text, q
 from core.http import http_get
-from core.store import get_alias, get_link
+from core.store import get_alias, get_link, search_aliases
 from core.config import HENRIK_BASE
 
 class ProfileCog(commands.Cog):
@@ -66,6 +66,21 @@ class ProfileCog(commands.Cog):
         except Exception as e:
             msg = str(e) or e.__class__.__name__
             await inter.followup.send(f"Error: {msg}")
+
+    def _alias_choices(self, query: Optional[str]) -> List[app_commands.Choice[str]]:
+        records = search_aliases(query, limit=25)
+        return [
+            app_commands.Choice(name=alias_display(rec), value=rec["alias"])
+            for rec in records
+        ]
+
+    @vprofile.autocomplete("target")
+    async def vprofile_target_autocomplete(
+        self,
+        inter: discord.Interaction,
+        current: str,
+    ):
+        return self._alias_choices(current)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(ProfileCog(bot))

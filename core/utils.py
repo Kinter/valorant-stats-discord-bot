@@ -1,6 +1,6 @@
 import time
 import urllib.parse
-from typing import Optional
+from typing import Optional, Dict, Any
 
 REGIONS = {"ap","kr","eu","na","br","latam"}
 _COOLDOWN_SEC = 5
@@ -30,3 +30,10 @@ def tier_key(name: str) -> str:
 
 def trunc2(x: float) -> float:
     return int(x * 100) / 100
+
+def alias_display(info: Dict[str, Any]) -> str:
+    alias = clean_text(info.get("alias", ""))
+    name = clean_text(info.get("name", ""))
+    tag = clean_text(info.get("tag", ""))
+    label = f"{alias} ({name}#{tag})" if alias else f"{name}#{tag}"
+    return label if len(label) <= 100 else (label[:97] + "...")

@@ -1,11 +1,11 @@
-from typing import Optional
+from typing import Optional, List
 import discord
 from discord import app_commands
 from discord.ext import commands
 from core.config import HENRIK_BASE, TIERS_DIR
 from core.http import http_get
-from core.store import get_alias, get_link, store_match_batch
-from core.utils import check_cooldown, clean_text, q, tier_key, trunc2
+from core.store import get_alias, get_link, search_aliases, store_match_batch
+from core.utils import alias_display, check_cooldown, clean_text, q, tier_key, trunc2
 
 async def fetch_matches(region: str, name: str, tag: str, *, mode: Optional[str], size: int) -> dict:
     # mode 공란이면 competitive
@@ -129,6 +129,21 @@ class SummaryCog(commands.Cog):
         except Exception as e:
             msg = str(e) or e.__class__.__name__
             await inter.followup.send(f"Error: {msg}")
+
+    def _alias_choices(self, query: Optional[str]) -> List[app_commands.Choice[str]]:
+        records = search_aliases(query, limit=25)
+        return [
+            app_commands.Choice(name=alias_display(rec), value=rec["alias"])
+            for rec in records
+        ]
+
+    @vsummary.autocomplete("target")
+    async def vsummary_target_autocomplete(
+        self,
+        inter: discord.Interaction,
+        current: str,
+    ):
+        return self._alias_choices(current)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(SummaryCog(bot))

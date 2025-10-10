@@ -156,6 +156,37 @@ def list_aliases() -> List[Dict[str, Any]]:
     return [_row_to_dict(r) for r in rows]
 
 
+def search_aliases(query: str | None = None, limit: int = 25) -> List[Dict[str, Any]]:
+    q = (query or "").strip().lower()
+    limit = max(1, min(25, limit or 25))
+    with _connect() as conn:
+        if q:
+            like = f"%{q}%"
+            rows = conn.execute(
+                """
+                SELECT alias, alias_norm, name, tag, region, puuid, ts
+                FROM aliases
+                WHERE alias_norm LIKE ?
+                   OR LOWER(name) LIKE ?
+                   OR LOWER(tag) LIKE ?
+                ORDER BY alias COLLATE NOCASE
+                LIMIT ?
+                """,
+                (like, like, like, limit),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                """
+                SELECT alias, alias_norm, name, tag, region, puuid, ts
+                FROM aliases
+                ORDER BY alias COLLATE NOCASE
+                LIMIT ?
+                """,
+                (limit,),
+            ).fetchall()
+    return [_row_to_dict(r) for r in rows]
+
+
 def store_match_batch(owner_key: str, puuid: str, matches: Iterable[Dict[str, Any]]) -> int:
     now = int(time.time())
     rows: List[Tuple[Any, ...]] = []
