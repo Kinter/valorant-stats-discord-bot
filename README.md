@@ -58,7 +58,7 @@ HENRIK_API_KEY=your_henrikdev_api_key
 
 ### 5. Run the bot
 ```bash
-python -u main.py
+python -m bot
 ```
 
 ---
@@ -67,7 +67,7 @@ python -u main.py
 
 ```
 discord_bot/
-├─ main.py               # main bot entrypoint
+├─ bot.py                # main bot entrypoint
 ├─ requirements.txt      # Python dependencies
 ├─ .env                  # tokens and API keys (excluded via .gitignore)
 ├─ data/                 # runtime data (bot.sqlite3 etc.)

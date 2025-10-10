@@ -1,5 +1,7 @@
 import asyncio
 import logging
+from typing import Optional
+
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -15,7 +17,7 @@ intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 
-def _describe_context(user: discord.abc.User, guild: discord.abc.Guild | None) -> str:
+def _describe_context(user: discord.abc.User, guild: Optional[discord.Guild]) -> str:
     user_repr = f"{user} (ID: {user.id})"
     if guild is None:
         return f"{user_repr} in DM"
@@ -92,7 +94,15 @@ async def main():
     try:
         await bot.start(DISCORD_TOKEN)
     finally:
-        await close_session()
+        try:
+            if not bot.is_closed():
+                await bot.close()
+        finally:
+            await close_session()
+
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        logging.info("Received keyboard interrupt. Shutting down.")
