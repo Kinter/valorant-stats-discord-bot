@@ -70,7 +70,7 @@ discord_bot/
 ├─ main.py               # main bot entrypoint
 ├─ requirements.txt      # Python dependencies
 ├─ .env                  # tokens and API keys (excluded via .gitignore)
-├─ data/                 # runtime data (links.json etc.)
+├─ data/                 # runtime data (bot.sqlite3 etc.)
 ├─ assets/
 │   └─ tiers/            # tier images (radiant.png, diamond1.png ...)
 └─ README.md             # project readme
