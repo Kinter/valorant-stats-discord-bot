@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import discord
+from discord import app_commands
 from discord.ext import commands
 from core.config import DISCORD_TOKEN
 from core.http import close_session
@@ -13,6 +14,13 @@ logging.basicConfig(
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+
+def _describe_context(user: discord.abc.User, guild: discord.abc.Guild | None) -> str:
+    user_repr = f"{user} (ID: {user.id})"
+    if guild is None:
+        return f"{user_repr} in DM"
+    return f"{user_repr} in {guild.name} (ID: {guild.id})"
+
 COGS = [
     "cogs.link",
     "cogs.summary",
@@ -21,6 +29,40 @@ COGS = [
     "cogs.agent",
     "cogs.admin",
 ]
+
+
+@bot.listen("on_app_command_completion")
+async def log_app_command_completion(interaction: discord.Interaction, command: app_commands.Command):
+    logging.info("[CMD] /%s by %s", command.qualified_name, _describe_context(interaction.user, interaction.guild))
+
+
+@bot.listen("on_app_command_error")
+async def log_app_command_error(
+    interaction: discord.Interaction, command: app_commands.Command, error: app_commands.AppCommandError
+):
+    logging.error(
+        "[CMD ERROR] /%s by %s",
+        command.qualified_name,
+        _describe_context(interaction.user, interaction.guild),
+        exc_info=(type(error), error, error.__traceback__),
+    )
+
+
+@bot.event
+async def on_command_completion(ctx: commands.Context):
+    logging.info("[CMD] !%s by %s", ctx.command.qualified_name, _describe_context(ctx.author, ctx.guild))
+
+
+@bot.event
+async def on_command_error(ctx: commands.Context, error: commands.CommandError):
+    command_name = ctx.command.qualified_name if ctx.command else "?"
+    logging.error(
+        "[CMD ERROR] !%s by %s",
+        command_name,
+        _describe_context(ctx.author, ctx.guild),
+        exc_info=(type(error), error, error.__traceback__),
+    )
+
 
 @bot.event
 async def on_ready():
