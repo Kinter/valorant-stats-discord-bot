@@ -7,6 +7,7 @@ load_dotenv()
 # env
 DISCORD_TOKEN  = os.getenv("DISCORD_TOKEN") or ""
 HENRIK_API_KEY = os.getenv("HENRIK_API_KEY") or ""
+LOG_LEVEL      = (os.getenv("LOG_LEVEL") or "INFO").upper()
 
 # endpoints
 HENRIK_BASE = "https://api.henrikdev.xyz/valorant"

@@ -51,7 +51,10 @@ Create a `.env` file in the project root:
 ```env
 DISCORD_TOKEN=your_discord_bot_token
 HENRIK_API_KEY=your_henrikdev_api_key
+# Optional: DEBUG / INFO / WARNING / ERROR / CRITICAL
+LOG_LEVEL=INFO
 ```
+Set `LOG_LEVEL=DEBUG` if you need more verbose console logs while running the bot.
 
 > ⚠️ You **must** request an API key from HenrikDev to use this bot.  
 > [HenrikDev Docs](https://docs.henrikdev.xyz/)

@@ -18,10 +18,10 @@ class SummaryCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    def _resolve_target(self, user_id: int) -> tuple[str, str, str]:
+    def _resolve_target(self, user_id: int) -> Optional[tuple[str, str, str]]:
         info = get_link(user_id)
         if not info:
-            raise RuntimeError("No linked Riot ID. Use /link first.")
+            return None
         return info["name"], info["tag"], info.get("region", "ap")
 
     @app_commands.command(name="vsummary", description="Recent summary (tier image / WR / KD / comment)")
@@ -34,9 +34,14 @@ class SummaryCog(commands.Cog):
             await inter.response.send_message(f"Retry later. {remain}s left", ephemeral=True)
             return
 
+        target = self._resolve_target(inter.user.id)
+        if target is None:
+            await inter.response.send_message("not linking", ephemeral=True)
+            return
+
+        name, tag, region = target
         await inter.response.defer()
         try:
-            name, tag, region = self._resolve_target(inter.user.id)
 
             acc = await http_get(f"{HENRIK_BASE}/v1/account/{q(name)}/{q(tag)}")
             puuid = (acc.get("data") or {}).get("puuid")
@@ -101,7 +106,8 @@ class SummaryCog(commands.Cog):
                 await inter.followup.send(embed=embed)
 
         except Exception as e:
-            await inter.followup.send(f"Error: {e}")
+            msg = str(e) or e.__class__.__name__
+            await inter.followup.send(f"Error: {msg}")
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(SummaryCog(bot))

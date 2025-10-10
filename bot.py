@@ -5,13 +5,33 @@ from typing import Optional
 import discord
 from discord import app_commands
 from discord.ext import commands
-from core.config import DISCORD_TOKEN
+from core.config import DISCORD_TOKEN, LOG_LEVEL
 from core.http import close_session
 
+
+def _resolve_log_level(name: str) -> int:
+    numeric = getattr(logging, name, None)
+    if isinstance(numeric, int):
+        return numeric
+    try:
+        return int(name)
+    except (TypeError, ValueError):
+        return logging.INFO
+
+
+_log_level = _resolve_log_level(LOG_LEVEL)
+
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)-8s %(name)s %(message)s"
+    level=_log_level,
+    format="%(asctime)s %(levelname)-8s %(name)s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
+
+discord_logger = logging.getLogger("discord")
+discord_http_logger = logging.getLogger("discord.http")
+discord_logger.setLevel(max(_log_level, logging.INFO))
+discord_http_logger.setLevel(max(_log_level, logging.INFO))
+logging.getLogger(__name__).info("Logging initialised at level %s", logging.getLevelName(_log_level))
 
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix="!", intents=intents)
