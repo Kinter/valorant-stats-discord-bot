@@ -8,7 +8,14 @@ from discord.ext import commands
 from core.config import HENRIK_BASE
 from core.http import http_get
 from core.store import get_alias, get_link, search_aliases, store_match_batch
-from core.utils import alias_display, check_cooldown, clean_text, is_account_not_found_error, q
+from core.utils import (
+    alias_display,
+    check_cooldown,
+    clean_text,
+    format_exception_message,
+    is_account_not_found_error,
+    q,
+)
 
 
 class MatchesCog(commands.Cog):
@@ -112,7 +119,8 @@ class MatchesCog(commands.Cog):
             if is_account_not_found_error(e):
                 await inter.followup.send("계정을 찾을 수 없습니다. 계정 이름과 태그를 확인해 주세요.")
             else:
-                await inter.followup.send(f"Error: {e}")
+                err = format_exception_message(e)
+                await inter.followup.send(f"Error: {err}")
 
     def _alias_choices(self, query: Optional[str]) -> List[app_commands.Choice[str]]:
         records = search_aliases(query, limit=25)

@@ -42,3 +42,10 @@ def alias_display(info: Dict[str, Any]) -> str:
 def is_account_not_found_error(error: Exception) -> bool:
     message = str(error) if error else ""
     return "Account not found" in message
+
+
+def format_exception_message(error: Exception) -> str:
+    if error is None:
+        return "Unknown error"
+    message = str(error).strip()
+    return message if message else error.__class__.__name__
