@@ -25,14 +25,14 @@ class RegisterCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    register_alias_desc = locale_str("Alias to reference later", ko="나중에 사용할 별명")
+    register_alias_desc = locale_str("Alias to reference later", ko="나중에 사용할 별칭")
     register_name_desc = locale_str("Riot ID name", ko="라이엇 ID 이름")
     register_tag_desc = locale_str("Riot ID tag", ko="라이엇 ID 태그")
     register_region_desc = locale_str("Valorant region (ap/kr/eu/na/...)", ko="발로란트 지역 (ap/kr/eu/na/...)")
 
     @app_commands.command(
-        name="별명등록",
-        description="별명을 등록해 플레이어를 빠르게 조회합니다.",
+        name="별명 등록",
+        description="Riot ID를 별명을 통해 등록할 수 있습니다.",
     )
     @app_commands.describe(
         alias=register_alias_desc,
@@ -53,10 +53,10 @@ class RegisterCog(commands.Cog):
         tag = clean_text(tag)
         region = norm_region(region or "ap")
         if not alias:
-            await inter.response.send_message("별명은 비워둘 수 없습니다.", ephemeral=True)
+            await inter.response.send_message("별칭은 비워둘 수 없습니다.", ephemeral=True)
             return
         if len(alias) > 32:
-            await inter.response.send_message("별명은 32자 이하로 입력해 주세요.", ephemeral=True)
+            await inter.response.send_message("별칭은 32자 이하로 입력해 주세요.", ephemeral=True)
             return
         if not name or not tag:
             await inter.response.send_message("라이엇 ID 이름과 태그를 모두 입력해 주세요.", ephemeral=True)
@@ -87,17 +87,17 @@ class RegisterCog(commands.Cog):
                 err = format_exception_message(e)
                 await inter.followup.send(f"등록에 실패했습니다: {err}", ephemeral=True)
 
-    unregister_alias_desc = locale_str("Alias to remove", ko="삭제할 별명")
+    unregister_alias_desc = locale_str("Alias to remove", ko="삭제할 별칭")
 
     @app_commands.command(
-        name="별명삭제",
-        description="등록된 별명을 삭제합니다.",
+        name="unregister",
+        description="Remove a registered alias.",
     )
     @app_commands.describe(alias=unregister_alias_desc)
     async def unregister(self, inter: discord.Interaction, alias: str):
         alias = clean_text(alias)
         if not alias:
-            await inter.response.send_message("별명은 비워둘 수 없습니다.", ephemeral=True)
+            await inter.response.send_message("별칭은 비워둘 수 없습니다.", ephemeral=True)
             return
 
         if remain := check_cooldown(inter.user.id):
@@ -107,13 +107,13 @@ class RegisterCog(commands.Cog):
         await inter.response.defer(ephemeral=True)
         removed = remove_alias(alias)
         if removed:
-            await inter.followup.send(f"별명 **{alias}** 을(를) 삭제했습니다.", ephemeral=True)
+            await inter.followup.send(f"별칭 **{alias}** 을(를) 삭제했습니다.", ephemeral=True)
         else:
-            await inter.followup.send(f"별명 **{alias}** 을(를) 찾을 수 없습니다.", ephemeral=True)
+            await inter.followup.send(f"별칭 **{alias}** 을(를) 찾을 수 없습니다.", ephemeral=True)
 
     @app_commands.command(
-        name="별명목록",
-        description="등록된 별명 목록을 보여줍니다.",
+        name="aliases",
+        description="List registered aliases.",
     )
     async def aliases(self, inter: discord.Interaction):
         if remain := check_cooldown(inter.user.id):
@@ -122,7 +122,7 @@ class RegisterCog(commands.Cog):
 
         records = list_aliases()
         if not records:
-            await inter.response.send_message("등록된 별명이 없습니다.")
+            await inter.response.send_message("등록된 별칭이 없습니다.")
             return
 
         await inter.response.defer()
@@ -175,7 +175,7 @@ class RegisterCog(commands.Cog):
         payload: List[Tuple[discord.Embed, str | None]],
     ) -> None:
         if not payload:
-            await inter.followup.send("등록된 별명이 없습니다.")
+            await inter.followup.send("등록된 별칭이 없습니다.")
             return
 
         chunk_size = 10
