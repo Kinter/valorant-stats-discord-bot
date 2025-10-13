@@ -28,14 +28,13 @@ class ProfileCog(commands.Cog):
             return None
         return info["name"], info["tag"], info.get("region", "ap")
 
-    vprofile_target_desc = locale_str("Registered alias to inspect (empty = your linked account)")
-    vprofile_target_desc.localize("ko", "조회할 등록 별칭 (비우면 내 계정)")
+    vprofile_target_desc = locale_str(
+        "Registered alias to inspect (empty = your linked account)", ko="조회할 등록 별칭 (비우면 내 계정)"
+    )
 
     @app_commands.command(
-        name="vprofile",
-        description="View the profile and MMR of your linked Riot ID.",
-        name_localizations={"ko": "프로필"},
-        description_localizations={"ko": "연결된 라이엇 ID의 프로필과 MMR을 확인합니다."},
+        name="조회",
+        description="연결된 라이엇 ID의 프로필과 MMR을 확인합니다.",
     )
     @app_commands.describe(target=vprofile_target_desc)
     async def vprofile(self, inter: discord.Interaction, target: Optional[str] = None):

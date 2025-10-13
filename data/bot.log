@@ -1,0 +1,467 @@
+2025-10-13 12:57:37 INFO     __main__ Logging initialised at level INFO
+2025-10-13 12:57:37 WARNING  discord.client PyNaCl is not installed, voice will NOT be supported
+2025-10-13 12:57:37 ERROR    root [COG ERROR] cogs.link: Extension 'cogs.link' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 962, in _load_from_module_spec
+    spec.loader.exec_module(lib)  # type: ignore
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\link.py", line 21, in <module>
+    class LinkCog(commands.Cog):
+    ...<65 lines>...
+                await inter.followup.send("연결된 계정이 없습니다.", ephemeral=True)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\link.py", line 29, in LinkCog
+    @app_commands.command(
+     ~~~~~~~~~~~~~~~~~~~~^
+        name="link",
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        description_localizations={"ko": "라이엇 ID를 봇과 연결합니다."},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+TypeError: command() got an unexpected keyword argument 'name_localizations'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\bot.py", line 120, in main
+    await bot.load_extension(ext)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 1040, in load_extension
+    await self._load_from_module_spec(spec, name)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 965, in _load_from_module_spec
+    raise errors.ExtensionFailed(key, e) from e
+discord.ext.commands.errors.ExtensionFailed: Extension 'cogs.link' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+2025-10-13 12:57:37 ERROR    root [COG ERROR] cogs.register: Extension 'cogs.register' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 962, in _load_from_module_spec
+    spec.loader.exec_module(lib)  # type: ignore
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\register.py", line 24, in <module>
+    class RegisterCog(commands.Cog):
+    ...<185 lines>...
+                    await inter.followup.send(**kwargs)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\register.py", line 33, in RegisterCog
+    @app_commands.command(
+     ~~~~~~~~~~~~~~~~~~~~^
+        name="register",
+        ^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        description_localizations={"ko": "별칭을 등록해 플레이어를 빠르게 조회합니다."},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+TypeError: command() got an unexpected keyword argument 'name_localizations'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\bot.py", line 120, in main
+    await bot.load_extension(ext)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 1040, in load_extension
+    await self._load_from_module_spec(spec, name)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 965, in _load_from_module_spec
+    raise errors.ExtensionFailed(key, e) from e
+discord.ext.commands.errors.ExtensionFailed: Extension 'cogs.register' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+2025-10-13 12:57:37 ERROR    root [COG ERROR] cogs.summary: Extension 'cogs.summary' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 962, in _load_from_module_spec
+    spec.loader.exec_module(lib)  # type: ignore
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\summary.py", line 30, in <module>
+    class SummaryCog(commands.Cog):
+    ...<144 lines>...
+            return self._alias_choices(current)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\summary.py", line 45, in SummaryCog
+    @app_commands.command(
+     ~~~~~~~~~~~~~~~~~~~~^
+        name="vsummary",
+        ^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        description_localizations={"ko": "최근 전적 요약 (티어 이미지 / 승률 / KD / 코멘트)"},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+TypeError: command() got an unexpected keyword argument 'name_localizations'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\bot.py", line 120, in main
+    await bot.load_extension(ext)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 1040, in load_extension
+    await self._load_from_module_spec(spec, name)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 965, in _load_from_module_spec
+    raise errors.ExtensionFailed(key, e) from e
+discord.ext.commands.errors.ExtensionFailed: Extension 'cogs.summary' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+2025-10-13 12:57:37 ERROR    root [COG ERROR] cogs.profile: Extension 'cogs.profile' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 962, in _load_from_module_spec
+    spec.loader.exec_module(lib)  # type: ignore
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\profile.py", line 21, in <module>
+    class ProfileCog(commands.Cog):
+    ...<79 lines>...
+            return self._alias_choices(current)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\profile.py", line 35, in ProfileCog
+    @app_commands.command(
+     ~~~~~~~~~~~~~~~~~~~~^
+        name="vprofile",
+        ^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        description_localizations={"ko": "연결된 라이엇 ID의 프로필과 MMR을 확인합니다."},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+TypeError: command() got an unexpected keyword argument 'name_localizations'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\bot.py", line 120, in main
+    await bot.load_extension(ext)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 1040, in load_extension
+    await self._load_from_module_spec(spec, name)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 965, in _load_from_module_spec
+    raise errors.ExtensionFailed(key, e) from e
+discord.ext.commands.errors.ExtensionFailed: Extension 'cogs.profile' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+2025-10-13 12:57:37 ERROR    root [COG ERROR] cogs.matches: Extension 'cogs.matches' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 962, in _load_from_module_spec
+    spec.loader.exec_module(lib)  # type: ignore
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\matches.py", line 22, in <module>
+    class MatchesCog(commands.Cog):
+    ...<122 lines>...
+            return self._alias_choices(current)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\matches.py", line 39, in MatchesCog
+    @app_commands.command(
+     ~~~~~~~~~~~~~~~~~~~~^
+        name="vmatches",
+        ^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        description_localizations={"ko": "최근 경기 K/D/A 요약을 보여줍니다."},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+TypeError: command() got an unexpected keyword argument 'name_localizations'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\bot.py", line 120, in main
+    await bot.load_extension(ext)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 1040, in load_extension
+    await self._load_from_module_spec(spec, name)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 965, in _load_from_module_spec
+    raise errors.ExtensionFailed(key, e) from e
+discord.ext.commands.errors.ExtensionFailed: Extension 'cogs.matches' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+2025-10-13 12:57:37 ERROR    root [COG ERROR] cogs.agent: Extension 'cogs.agent' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 962, in _load_from_module_spec
+    spec.loader.exec_module(lib)  # type: ignore
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\agent.py", line 11, in <module>
+    class AgentCog(commands.Cog):
+    ...<49 lines>...
+                await inter.followup.send(f"오류가 발생했습니다: {e}")
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\agent.py", line 17, in AgentCog
+    @app_commands.command(
+     ~~~~~~~~~~~~~~~~~~~~^
+        name="vagent",
+        ^^^^^^^^^^^^^^
+    ...<2 lines>...
+        description_localizations={"ko": "요원 정보를 확인합니다 (이미지/설명)."},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+TypeError: command() got an unexpected keyword argument 'name_localizations'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\bot.py", line 120, in main
+    await bot.load_extension(ext)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 1040, in load_extension
+    await self._load_from_module_spec(spec, name)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 965, in _load_from_module_spec
+    raise errors.ExtensionFailed(key, e) from e
+discord.ext.commands.errors.ExtensionFailed: Extension 'cogs.agent' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+2025-10-13 12:57:37 INFO     root [COG] loaded: cogs.admin
+2025-10-13 12:57:37 INFO     discord.client logging in using static token
+2025-10-13 12:57:37 WARNING  discord.ext.commands.bot Privileged message content intent is missing, commands may not work as expected.
+2025-10-13 12:57:38 INFO     discord.gateway Shard ID None has connected to Gateway (Session ID: 50f38885b9d3a29e5f6a48a14985acb4).
+2025-10-13 12:57:42 INFO     root [SYNC] Guild slash synced for testing (727476423677182055): 1
+2025-10-13 12:57:42 INFO     root [GUILDS] 2 connected
+2025-10-13 12:57:42 INFO     root  - 냥냥펀치 (ID: 727476423677182055) members≈20
+2025-10-13 12:57:42 INFO     root  - 놀이터 (ID: 1131879756338569257) members≈22
+2025-10-13 12:57:42 INFO     root Logged in as 발로란트 동기부여 봇#2070 (ID: 727475800659591168)
+2025-10-13 13:08:24 INFO     root Received keyboard interrupt. Shutting down.
+2025-10-13 13:08:44 INFO     __main__ Logging initialised at level INFO
+2025-10-13 13:08:44 WARNING  discord.client PyNaCl is not installed, voice will NOT be supported
+2025-10-13 13:08:44 ERROR    root [COG ERROR] cogs.link: Extension 'cogs.link' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 962, in _load_from_module_spec
+    spec.loader.exec_module(lib)  # type: ignore
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\link.py", line 21, in <module>
+    class LinkCog(commands.Cog):
+    ...<65 lines>...
+                await inter.followup.send("연결된 계정이 없습니다.", ephemeral=True)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\link.py", line 29, in LinkCog
+    @app_commands.command(
+     ~~~~~~~~~~~~~~~~~~~~^
+        name="link",
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        description_localizations={"ko": "라이엇 ID를 봇과 연결합니다."},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+TypeError: command() got an unexpected keyword argument 'name_localizations'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\bot.py", line 120, in main
+    await bot.load_extension(ext)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 1040, in load_extension
+    await self._load_from_module_spec(spec, name)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 965, in _load_from_module_spec
+    raise errors.ExtensionFailed(key, e) from e
+discord.ext.commands.errors.ExtensionFailed: Extension 'cogs.link' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+2025-10-13 13:08:44 ERROR    root [COG ERROR] cogs.register: Extension 'cogs.register' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 962, in _load_from_module_spec
+    spec.loader.exec_module(lib)  # type: ignore
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\register.py", line 24, in <module>
+    class RegisterCog(commands.Cog):
+    ...<185 lines>...
+                    await inter.followup.send(**kwargs)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\register.py", line 33, in RegisterCog
+    @app_commands.command(
+     ~~~~~~~~~~~~~~~~~~~~^
+        name="register",
+        ^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        description_localizations={"ko": "별칭을 등록해 플레이어를 빠르게 조회합니다."},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+TypeError: command() got an unexpected keyword argument 'name_localizations'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\bot.py", line 120, in main
+    await bot.load_extension(ext)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 1040, in load_extension
+    await self._load_from_module_spec(spec, name)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 965, in _load_from_module_spec
+    raise errors.ExtensionFailed(key, e) from e
+discord.ext.commands.errors.ExtensionFailed: Extension 'cogs.register' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+2025-10-13 13:08:44 ERROR    root [COG ERROR] cogs.summary: Extension 'cogs.summary' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 962, in _load_from_module_spec
+    spec.loader.exec_module(lib)  # type: ignore
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\summary.py", line 30, in <module>
+    class SummaryCog(commands.Cog):
+    ...<144 lines>...
+            return self._alias_choices(current)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\summary.py", line 45, in SummaryCog
+    @app_commands.command(
+     ~~~~~~~~~~~~~~~~~~~~^
+        name="vsummary",
+        ^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        description_localizations={"ko": "최근 전적 요약 (티어 이미지 / 승률 / KD / 코멘트)"},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+TypeError: command() got an unexpected keyword argument 'name_localizations'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\bot.py", line 120, in main
+    await bot.load_extension(ext)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 1040, in load_extension
+    await self._load_from_module_spec(spec, name)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 965, in _load_from_module_spec
+    raise errors.ExtensionFailed(key, e) from e
+discord.ext.commands.errors.ExtensionFailed: Extension 'cogs.summary' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+2025-10-13 13:08:44 ERROR    root [COG ERROR] cogs.profile: Extension 'cogs.profile' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 962, in _load_from_module_spec
+    spec.loader.exec_module(lib)  # type: ignore
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\profile.py", line 21, in <module>
+    class ProfileCog(commands.Cog):
+    ...<79 lines>...
+            return self._alias_choices(current)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\profile.py", line 35, in ProfileCog
+    @app_commands.command(
+     ~~~~~~~~~~~~~~~~~~~~^
+        name="vprofile",
+        ^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        description_localizations={"ko": "연결된 라이엇 ID의 프로필과 MMR을 확인합니다."},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+TypeError: command() got an unexpected keyword argument 'name_localizations'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\bot.py", line 120, in main
+    await bot.load_extension(ext)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 1040, in load_extension
+    await self._load_from_module_spec(spec, name)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 965, in _load_from_module_spec
+    raise errors.ExtensionFailed(key, e) from e
+discord.ext.commands.errors.ExtensionFailed: Extension 'cogs.profile' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+2025-10-13 13:08:44 ERROR    root [COG ERROR] cogs.matches: Extension 'cogs.matches' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 962, in _load_from_module_spec
+    spec.loader.exec_module(lib)  # type: ignore
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\matches.py", line 22, in <module>
+    class MatchesCog(commands.Cog):
+    ...<122 lines>...
+            return self._alias_choices(current)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\matches.py", line 39, in MatchesCog
+    @app_commands.command(
+     ~~~~~~~~~~~~~~~~~~~~^
+        name="vmatches",
+        ^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        description_localizations={"ko": "최근 경기 K/D/A 요약을 보여줍니다."},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+TypeError: command() got an unexpected keyword argument 'name_localizations'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\bot.py", line 120, in main
+    await bot.load_extension(ext)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 1040, in load_extension
+    await self._load_from_module_spec(spec, name)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 965, in _load_from_module_spec
+    raise errors.ExtensionFailed(key, e) from e
+discord.ext.commands.errors.ExtensionFailed: Extension 'cogs.matches' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+2025-10-13 13:08:44 ERROR    root [COG ERROR] cogs.agent: Extension 'cogs.agent' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 962, in _load_from_module_spec
+    spec.loader.exec_module(lib)  # type: ignore
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\agent.py", line 11, in <module>
+    class AgentCog(commands.Cog):
+    ...<49 lines>...
+                await inter.followup.send(f"오류가 발생했습니다: {e}")
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\cogs\agent.py", line 17, in AgentCog
+    @app_commands.command(
+     ~~~~~~~~~~~~~~~~~~~~^
+        name="vagent",
+        ^^^^^^^^^^^^^^
+    ...<2 lines>...
+        description_localizations={"ko": "요원 정보를 확인합니다 (이미지/설명)."},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+TypeError: command() got an unexpected keyword argument 'name_localizations'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\bot.py", line 120, in main
+    await bot.load_extension(ext)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 1040, in load_extension
+    await self._load_from_module_spec(spec, name)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\ext\commands\bot.py", line 965, in _load_from_module_spec
+    raise errors.ExtensionFailed(key, e) from e
+discord.ext.commands.errors.ExtensionFailed: Extension 'cogs.agent' raised an error: TypeError: command() got an unexpected keyword argument 'name_localizations'
+2025-10-13 13:08:44 INFO     root [COG] loaded: cogs.admin
+2025-10-13 13:08:44 INFO     discord.client logging in using static token
+2025-10-13 13:08:44 WARNING  discord.ext.commands.bot Privileged message content intent is missing, commands may not work as expected.
+2025-10-13 13:08:46 INFO     discord.gateway Shard ID None has connected to Gateway (Session ID: 4cc7037f5cefc1188627eb4a1ac22c4e).
+2025-10-13 13:08:48 INFO     root [SYNC] Guild slash synced for testing (727476423677182055): 1
+2025-10-13 13:08:48 INFO     root [GUILDS] 2 connected
+2025-10-13 13:08:48 INFO     root  - 냥냥펀치 (ID: 727476423677182055) members≈20
+2025-10-13 13:08:48 INFO     root  - 놀이터 (ID: 1131879756338569257) members≈22
+2025-10-13 13:08:48 INFO     root Logged in as 발로란트 동기부여 봇#2070 (ID: 727475800659591168)
+2025-10-13 13:16:24 INFO     root Received keyboard interrupt. Shutting down.
+2025-10-13 13:16:29 INFO     __main__ Logging initialised at level INFO
+2025-10-13 13:16:29 WARNING  discord.client PyNaCl is not installed, voice will NOT be supported
+2025-10-13 13:16:29 INFO     root [COG] loaded: cogs.link
+2025-10-13 13:16:29 INFO     root [COG] loaded: cogs.register
+2025-10-13 13:16:29 INFO     root [COG] loaded: cogs.summary
+2025-10-13 13:16:29 INFO     root [COG] loaded: cogs.profile
+2025-10-13 13:16:29 INFO     root [COG] loaded: cogs.matches
+2025-10-13 13:16:29 INFO     root [COG] loaded: cogs.agent
+2025-10-13 13:16:29 INFO     root [COG] loaded: cogs.admin
+2025-10-13 13:16:29 INFO     discord.client logging in using static token
+2025-10-13 13:16:29 WARNING  discord.ext.commands.bot Privileged message content intent is missing, commands may not work as expected.
+2025-10-13 13:16:31 INFO     discord.gateway Shard ID None has connected to Gateway (Session ID: fe772634ba46aea2dd00239d87ed89b9).
+2025-10-13 13:16:33 INFO     root [SYNC] Guild slash synced for testing (727476423677182055): 10
+2025-10-13 13:16:33 INFO     root [GUILDS] 2 connected
+2025-10-13 13:16:33 INFO     root  - 냥냥펀치 (ID: 727476423677182055) members≈20
+2025-10-13 13:16:33 INFO     root  - 놀이터 (ID: 1131879756338569257) members≈22
+2025-10-13 13:16:33 INFO     root Logged in as 발로란트 동기부여 봇#2070 (ID: 727475800659591168)
+2025-10-13 13:16:44 ERROR    discord.app_commands.tree Ignoring exception in command tree
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\app_commands\tree.py", line 1138, in wrapper
+    await self._call(interaction)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\app_commands\tree.py", line 1270, in _call
+    command, options = self._get_app_command_options(data)
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\app_commands\tree.py", line 1174, in _get_app_command_options
+    raise CommandNotFound(name, parents)
+discord.app_commands.errors.CommandNotFound: Application command 'resync' not found
+2025-10-13 13:17:28 ERROR    discord.app_commands.tree Ignoring exception in command tree
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\app_commands\tree.py", line 1138, in wrapper
+    await self._call(interaction)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\app_commands\tree.py", line 1270, in _call
+    command, options = self._get_app_command_options(data)
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\app_commands\tree.py", line 1174, in _get_app_command_options
+    raise CommandNotFound(name, parents)
+discord.app_commands.errors.CommandNotFound: Application command 'resync' not found
+2025-10-13 13:17:38 ERROR    discord.app_commands.tree Ignoring exception in command tree
+Traceback (most recent call last):
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\app_commands\tree.py", line 1138, in wrapper
+    await self._call(interaction)
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\app_commands\tree.py", line 1270, in _call
+    command, options = self._get_app_command_options(data)
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\in010\OneDrive\문서\dev\valorant-stats-discord-bot\.venv\Lib\site-packages\discord\app_commands\tree.py", line 1174, in _get_app_command_options
+    raise CommandNotFound(name, parents)
+discord.app_commands.errors.CommandNotFound: Application command 'resync' not found

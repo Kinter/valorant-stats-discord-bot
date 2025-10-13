@@ -6,7 +6,7 @@ class AdminCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="resync", description="슬래시 명령을 다시 동기화합니다 (관리자 전용).")
+    @app_commands.command(name="명령동기화", description="슬래시 명령을 다시 동기화합니다 (관리자 전용).")
     async def resync(self, inter: discord.Interaction):
         app = await self.bot.application_info()
         if inter.user.id != app.owner.id:

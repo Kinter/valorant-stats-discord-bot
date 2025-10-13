@@ -12,14 +12,11 @@ class AgentCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    vagent_name_desc = locale_str("Agent name (e.g., Jett, Sage, Sova)")
-    vagent_name_desc.localize("ko", "요원 이름 (예: 제트, 세이지, 소바)")
+    vagent_name_desc = locale_str("Agent name (e.g., Jett, Sage, Sova)", ko="요원 이름 (예: 제트, 세이지, 소바)")
 
     @app_commands.command(
-        name="vagent",
-        description="Get agent info (image and description).",
-        name_localizations={"ko": "요원정보"},
-        description_localizations={"ko": "요원 정보를 확인합니다 (이미지/설명)."},
+        name="요원정보",
+        description="요원 정보를 확인합니다 (이미지와 설명).",
     )
     @app_commands.describe(name=vagent_name_desc)
     async def vagent(self, inter: discord.Interaction, name: str):

@@ -5,9 +5,18 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # env
-DISCORD_TOKEN  = os.getenv("DISCORD_TOKEN") or ""
+DISCORD_TOKEN = os.getenv("DISCORD_TOKEN") or ""
 HENRIK_API_KEY = os.getenv("HENRIK_API_KEY") or ""
-LOG_LEVEL      = (os.getenv("LOG_LEVEL") or "INFO").upper()
+LOG_LEVEL = (os.getenv("LOG_LEVEL") or "INFO").upper()
+_guild_id_raw = os.getenv("GUILD_ID")
+if _guild_id_raw:
+    _guild_id_token = _guild_id_raw.split()[0]
+    try:
+        GUILD_ID = int(_guild_id_token)
+    except ValueError:
+        GUILD_ID = None
+else:
+    GUILD_ID = None
 
 # endpoints
 HENRIK_BASE = "https://api.henrikdev.xyz/valorant"
@@ -18,6 +27,7 @@ ROOT_DIR   = Path(__file__).resolve().parents[1]
 DATA_DIR   = ROOT_DIR / "data"
 ASSETS_DIR = ROOT_DIR / "assets"
 TIERS_DIR  = ASSETS_DIR / "tiers"
+LOG_FILE   = DATA_DIR / "bot.log"
 
 DB_FILE = DATA_DIR / "bot.sqlite3"
 

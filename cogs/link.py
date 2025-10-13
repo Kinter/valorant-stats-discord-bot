@@ -22,18 +22,13 @@ class LinkCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    link_name_desc = locale_str("Riot ID name")
-    link_name_desc.localize("ko", "라이엇 ID 이름")
-    link_tag_desc = locale_str("Riot ID tag")
-    link_tag_desc.localize("ko", "라이엇 ID 태그")
-    link_region_desc = locale_str("Valorant region (ap/kr/eu/na/...)")
-    link_region_desc.localize("ko", "서버 지역 (ap/kr/eu/na/...)")
+    link_name_desc = locale_str("Riot ID name", ko="라이엇 ID 이름")
+    link_tag_desc = locale_str("Riot ID tag", ko="라이엇 ID 태그")
+    link_region_desc = locale_str("Valorant region (ap/kr/eu/na/...)", ko="서버 지역 (ap/kr/eu/na/...)")
 
     @app_commands.command(
-        name="link",
-        description="Link your Riot ID to the bot.",
-        name_localizations={"ko": "계정연결"},
-        description_localizations={"ko": "라이엇 ID를 봇과 연결합니다."},
+        name="계정연결",
+        description="라이엇 ID를 봇과 연결합니다.",
     )
     @app_commands.describe(
         name=link_name_desc,
@@ -70,10 +65,8 @@ class LinkCog(commands.Cog):
                 await inter.followup.send(f"연결에 실패했습니다: {err}", ephemeral=True)
 
     @app_commands.command(
-        name="unlink",
-        description="Unlink your Riot ID from the bot.",
-        name_localizations={"ko": "계정연결해제"},
-        description_localizations={"ko": "연결된 라이엇 ID를 해제합니다."},
+        name="계정연결해제",
+        description="연결된 라이엇 ID를 해제합니다.",
     )
     async def unlink(self, inter: discord.Interaction):
         if remain := check_cooldown(inter.user.id):

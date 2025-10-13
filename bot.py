@@ -5,7 +5,7 @@ from typing import Optional
 import discord
 from discord import app_commands
 from discord.ext import commands
-from core.config import DISCORD_TOKEN, LOG_LEVEL
+from core.config import DISCORD_TOKEN, LOG_LEVEL, GUILD_ID, LOG_FILE
 from core.http import close_session
 
 
@@ -25,6 +25,10 @@ logging.basicConfig(
     level=_log_level,
     format="%(asctime)s %(levelname)-8s %(name)s %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler(LOG_FILE, encoding="utf-8"),
+    ],
 )
 
 discord_logger = logging.getLogger("discord")
@@ -90,8 +94,14 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError):
 @bot.event
 async def on_ready():
     try:
-        synced = await bot.tree.sync()
-        logging.info(f"[SYNC] Global slash synced: {len(synced)}")
+        if GUILD_ID:
+            guild_obj = discord.Object(id=GUILD_ID)
+            bot.tree.copy_global_to(guild=guild_obj)
+            synced = await bot.tree.sync(guild=guild_obj)
+            logging.info(f"[SYNC] Guild slash synced for testing ({GUILD_ID}): {len(synced)}")
+        else:
+            synced = await bot.tree.sync()
+            logging.info(f"[SYNC] Global slash synced: {len(synced)}")
     except Exception as e:
         logging.exception("[SYNC ERROR] %s", e)
 

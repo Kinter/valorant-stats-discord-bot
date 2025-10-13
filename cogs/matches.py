@@ -29,20 +29,16 @@ class MatchesCog(commands.Cog):
             return None
         return info["name"], info["tag"], info.get("region", "ap")
 
-    vmatches_count_desc = locale_str("Number of matches to fetch (1-10)")
-    vmatches_count_desc.localize("ko", "조회할 경기 수 (1~10)")
-    vmatches_mode_desc = locale_str("Game mode filter")
-    vmatches_mode_desc.localize("ko", "게임 모드 필터")
-    vmatches_map_desc = locale_str("Map filter")
-    vmatches_map_desc.localize("ko", "맵 필터")
-    vmatches_target_desc = locale_str("Registered alias to inspect (empty = your linked account)")
-    vmatches_target_desc.localize("ko", "조회할 등록 별칭 (비우면 내 계정)")
+    vmatches_count_desc = locale_str("Number of matches to fetch (1-10)", ko="조회할 경기 수 (1~10)")
+    vmatches_mode_desc = locale_str("Game mode filter", ko="게임 모드 필터")
+    vmatches_map_desc = locale_str("Map filter", ko="맵 필터")
+    vmatches_target_desc = locale_str(
+        "Registered alias to inspect (empty = your linked account)", ko="조회할 등록 별칭 (비우면 내 계정)"
+    )
 
     @app_commands.command(
-        name="vmatches",
-        description="Show recent matches with K/D/A summary.",
-        name_localizations={"ko": "경기요약"},
-        description_localizations={"ko": "최근 경기 K/D/A 요약을 보여줍니다."},
+        name="최근경기",
+        description="최근 경기 K/D/A 요약을 보여줍니다.",
     )
     @app_commands.describe(
         count=vmatches_count_desc,
