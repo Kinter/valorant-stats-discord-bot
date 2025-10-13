@@ -33,3 +33,4 @@ data/bot.log
 patch.diff
 *.patch
 *.rej
+data/bot.log
