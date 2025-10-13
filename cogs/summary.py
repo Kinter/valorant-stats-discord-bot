@@ -43,7 +43,7 @@ class SummaryCog(commands.Cog):
     )
 
     @app_commands.command(
-        name="최근 전적 요약",
+        name="최근전적",
         description="최근 전적 요약을 보여줍니다 (티어 / 승률 / KD / 조언).",
     )
     @app_commands.describe(

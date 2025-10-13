@@ -31,7 +31,7 @@ class RegisterCog(commands.Cog):
     register_region_desc = locale_str("Valorant region (ap/kr/eu/na/...)", ko="발로란트 지역 (ap/kr/eu/na/...)")
 
     @app_commands.command(
-        name="별명 등록",
+        name="별명등록",
         description="Riot ID를 별명을 통해 등록할 수 있습니다.",
     )
     @app_commands.describe(

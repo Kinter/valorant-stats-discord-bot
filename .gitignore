@@ -20,6 +20,7 @@ Thumbs.db
 
 # --- SQLite (DB 본문 & 저널 파일) ---
 data/*.sqlite3
+data/bot.log
 *.sqlite3
 *.sqlite
 *.db

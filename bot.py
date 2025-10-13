@@ -94,14 +94,18 @@ async def on_command_error(ctx: commands.Context, error: commands.CommandError):
 @bot.event
 async def on_ready():
     try:
+        global_synced = await bot.tree.sync()
+        logging.info(f"[SYNC] Global slash synced: {len(global_synced)}")
+
+        target_guild_ids = {guild.id for guild in bot.guilds}
         if GUILD_ID:
-            guild_obj = discord.Object(id=GUILD_ID)
+            target_guild_ids.add(GUILD_ID)
+
+        for gid in target_guild_ids:
+            guild_obj = discord.Object(id=gid)
             bot.tree.copy_global_to(guild=guild_obj)
-            synced = await bot.tree.sync(guild=guild_obj)
-            logging.info(f"[SYNC] Guild slash synced for testing ({GUILD_ID}): {len(synced)}")
-        else:
-            synced = await bot.tree.sync()
-            logging.info(f"[SYNC] Global slash synced: {len(synced)}")
+            guild_synced = await bot.tree.sync(guild=guild_obj)
+            logging.info(f"[SYNC] Guild slash synced ({gid}): {len(guild_synced)}")
     except Exception as e:
         logging.exception("[SYNC ERROR] %s", e)
 

@@ -9,6 +9,7 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN") or ""
 HENRIK_API_KEY = os.getenv("HENRIK_API_KEY") or ""
 LOG_LEVEL = (os.getenv("LOG_LEVEL") or "INFO").upper()
 _guild_id_raw = os.getenv("GUILD_ID")
+#_guild_id_raw = os.getenv()
 if _guild_id_raw:
     _guild_id_token = _guild_id_raw.split()[0]
     try:
