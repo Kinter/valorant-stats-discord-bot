@@ -24,12 +24,12 @@ class RegisterCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="register", description="Register a player alias for quick lookup")
+    @app_commands.command(name="register", description="별칭을 등록해 플레이어를 빠르게 조회합니다.")
     @app_commands.describe(
-        alias="Friendly alias to reference later",
-        name="Riot ID name",
-        tag="Riot ID tag",
-        region="Valorant region (ap/kr/eu/na/...)",
+        alias="나중에 사용할 별칭",
+        name="라이엇 ID 이름",
+        tag="라이엇 ID 태그",
+        region="발로란트 지역 (ap/kr/eu/na/...)",
     )
     async def register(
         self,
@@ -44,17 +44,17 @@ class RegisterCog(commands.Cog):
         tag = clean_text(tag)
         region = norm_region(region or "ap")
         if not alias:
-            await inter.response.send_message("Alias cannot be empty.", ephemeral=True)
+            await inter.response.send_message("별칭은 비워둘 수 없습니다.", ephemeral=True)
             return
         if len(alias) > 32:
-            await inter.response.send_message("Alias must be 32 characters or fewer.", ephemeral=True)
+            await inter.response.send_message("별칭은 32자 이하로 입력해 주세요.", ephemeral=True)
             return
         if not name or not tag:
-            await inter.response.send_message("Name and tag must not be empty.", ephemeral=True)
+            await inter.response.send_message("라이엇 ID 이름과 태그를 모두 입력해 주세요.", ephemeral=True)
             return
 
         if remain := check_cooldown(inter.user.id):
-            await inter.response.send_message(f"Retry later. {remain}s left", ephemeral=True)
+            await inter.response.send_message(f"잠시 후 다시 시도해 주세요. 남은 대기 시간: {remain}초", ephemeral=True)
             return
 
         await inter.response.defer(ephemeral=True)
@@ -68,42 +68,44 @@ class RegisterCog(commands.Cog):
                 raise RuntimeError("Puuid missing in HenrikDev response")
 
             upsert_alias(alias, name, tag, region, puuid)
-            await inter.followup.send(f"Registered **{alias}** -> **{name}#{tag}** ({region.upper()})", ephemeral=True)
+            await inter.followup.send(
+                f"등록 완료: **{alias}** → **{name}#{tag}** ({region.upper()})", ephemeral=True
+            )
         except Exception as e:
             if is_account_not_found_error(e):
                 await inter.followup.send("계정을 찾을 수 없습니다. 계정 이름과 태그를 확인해 주세요.", ephemeral=True)
             else:
                 err = format_exception_message(e)
-                await inter.followup.send(f"Failed: {err}", ephemeral=True)
+                await inter.followup.send(f"등록에 실패했습니다: {err}", ephemeral=True)
 
-    @app_commands.command(name="unregister", description="Remove a player alias")
-    @app_commands.describe(alias="Alias to remove")
+    @app_commands.command(name="unregister", description="등록된 별칭을 삭제합니다.")
+    @app_commands.describe(alias="삭제할 별칭")
     async def unregister(self, inter: discord.Interaction, alias: str):
         alias = clean_text(alias)
         if not alias:
-            await inter.response.send_message("Alias cannot be empty.", ephemeral=True)
+            await inter.response.send_message("별칭은 비워둘 수 없습니다.", ephemeral=True)
             return
 
         if remain := check_cooldown(inter.user.id):
-            await inter.response.send_message(f"Retry later. {remain}s left", ephemeral=True)
+            await inter.response.send_message(f"잠시 후 다시 시도해 주세요. 남은 대기 시간: {remain}초", ephemeral=True)
             return
 
         await inter.response.defer(ephemeral=True)
         removed = remove_alias(alias)
         if removed:
-            await inter.followup.send(f"Removed alias **{alias}**", ephemeral=True)
+            await inter.followup.send(f"별칭 **{alias}** 을(를) 삭제했습니다.", ephemeral=True)
         else:
-            await inter.followup.send(f"Alias **{alias}** not found.", ephemeral=True)
+            await inter.followup.send(f"별칭 **{alias}** 을(를) 찾을 수 없습니다.", ephemeral=True)
 
-    @app_commands.command(name="aliases", description="List registered aliases")
+    @app_commands.command(name="aliases", description="등록된 별칭 목록을 보여줍니다.")
     async def aliases(self, inter: discord.Interaction):
         if remain := check_cooldown(inter.user.id):
-            await inter.response.send_message(f"Retry later. {remain}s left")
+            await inter.response.send_message(f"잠시 후 다시 시도해 주세요. 남은 대기 시간: {remain}초")
             return
 
         records = list_aliases()
         if not records:
-            await inter.response.send_message("No aliases registered.")
+            await inter.response.send_message("등록된 별칭이 없습니다.")
             return
 
         await inter.response.defer()
@@ -116,7 +118,8 @@ class RegisterCog(commands.Cog):
                 color=discord.Color.blurple(),
             )
             embed.set_author(name=rec["alias"])
-            embed.add_field(name="Tier", value=tier_name or TIER_NOT_FOUND_LABEL, inline=False)
+            display_tier = tier_name if tier_name and tier_name != "Unrated" else "언레이트"
+            embed.add_field(name="티어", value=display_tier or TIER_NOT_FOUND_LABEL, inline=False)
 
             local_path: str | None = None
             if image_url:
@@ -155,7 +158,7 @@ class RegisterCog(commands.Cog):
         payload: List[Tuple[discord.Embed, str | None]],
     ) -> None:
         if not payload:
-            await inter.followup.send("No aliases registered.")
+            await inter.followup.send("등록된 별칭이 없습니다.")
             return
 
         chunk_size = 10

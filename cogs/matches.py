@@ -28,12 +28,12 @@ class MatchesCog(commands.Cog):
             return None
         return info["name"], info["tag"], info.get("region", "ap")
 
-    @app_commands.command(name="vmatches", description="Recent matches with K/D/A summary")
+    @app_commands.command(name="vmatches", description="최근 경기 K/D/A 요약을 보여줍니다.")
     @app_commands.describe(
-        count="Number of matches (1~10)",
-        mode="Game mode filter",
-        map="Map filter",
-        target="Registered alias to inspect (empty = your linked account)",
+        count="조회할 경기 수 (1~10)",
+        mode="게임 모드 필터",
+        map="맵 필터",
+        target="조회할 등록 별칭 (비우면 내 계정)",
     )
     async def vmatches(
         self,
@@ -44,7 +44,7 @@ class MatchesCog(commands.Cog):
         target: Optional[str] = None,
     ):
         if remain := check_cooldown(inter.user.id):
-            await inter.response.send_message(f"Retry later. {remain}s left", ephemeral=True)
+            await inter.response.send_message(f"잠시 후 다시 시도해 주세요. 남은 대기 시간: {remain}초", ephemeral=True)
             return
 
         count = max(1, min(10, count))
@@ -54,7 +54,7 @@ class MatchesCog(commands.Cog):
         if alias_input:
             alias_info = get_alias(alias_input)
             if not alias_info:
-                await inter.response.send_message(f"Alias `{alias_input}` not found.", ephemeral=True)
+                await inter.response.send_message(f"`{alias_input}` 별칭을 찾을 수 없습니다.", ephemeral=True)
                 return
             name = alias_info["name"]
             tag = alias_info["tag"]
@@ -63,7 +63,7 @@ class MatchesCog(commands.Cog):
         else:
             resolved = self._resolve_self(inter.user.id)
             if resolved is None:
-                await inter.response.send_message("not linking", ephemeral=True)
+                await inter.response.send_message("연결된 계정이 없습니다.", ephemeral=True)
                 return
             name, tag, region = resolved
 
@@ -84,9 +84,9 @@ class MatchesCog(commands.Cog):
                 params["map"] = map
 
             js = await http_get(f"{HENRIK_BASE}/v3/matches/{region}/{q(name)}/{q(tag)}", params=params)
-            matches = (js.get("data") or [])
+            matches = js.get("data") or []
             if not matches:
-                await inter.followup.send("No recent matches.")
+                await inter.followup.send("최근 전적이 없습니다.")
                 return
 
             try:
@@ -110,31 +110,25 @@ class MatchesCog(commands.Cog):
                 result = "?"
                 team = me.get("team") if me else None
                 if team and isinstance(match.get("teams"), dict):
-                    result = "Win" if match["teams"].get(team, {}).get("has_won") else "Lose"
+                    result = "승" if match["teams"].get(team, {}).get("has_won") else "패"
 
                 lines.append(f"{map_name} / {mode_name} · {result} · {k}/{d}/{a}")
 
-            await inter.followup.send("**Recent Matches**\n" + "\n".join(f"- {line}" for line in lines))
+            body = "**최근 경기 요약**\n" + "\n".join(f"- {line}" for line in lines)
+            await inter.followup.send(body)
         except Exception as e:
             if is_account_not_found_error(e):
                 await inter.followup.send("계정을 찾을 수 없습니다. 계정 이름과 태그를 확인해 주세요.")
             else:
                 err = format_exception_message(e)
-                await inter.followup.send(f"Error: {err}")
+                await inter.followup.send(f"오류가 발생했습니다: {err}")
 
     def _alias_choices(self, query: Optional[str]) -> List[app_commands.Choice[str]]:
         records = search_aliases(query, limit=25)
-        return [
-            app_commands.Choice(name=alias_display(rec), value=rec["alias"])
-            for rec in records
-        ]
+        return [app_commands.Choice(name=alias_display(rec), value=rec["alias"]) for rec in records]
 
     @vmatches.autocomplete("target")
-    async def vmatches_target_autocomplete(
-        self,
-        inter: discord.Interaction,
-        current: str,
-    ):
+    async def vmatches_target_autocomplete(self, inter: discord.Interaction, current: str):
         return self._alias_choices(current)
 
 

@@ -21,15 +21,17 @@ class LinkCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="link", description="Link your Riot ID (consent to fetch stats)")
+    @app_commands.command(name="link", description="라이엇 ID를 봇과 연결합니다.")
     @app_commands.describe(
-        name="Riot ID name",
-        tag="Riot ID tag",
-        region="ap/kr/eu/na/...",
+        name="라이엇 ID 이름",
+        tag="라이엇 ID 태그",
+        region="서버 지역 (ap/kr/eu/na/...)",
     )
     async def link(self, inter: discord.Interaction, name: str, tag: str, region: Optional[str] = "ap"):
         if remain := check_cooldown(inter.user.id):
-            await inter.response.send_message(f"Retry later. {remain}s left", ephemeral=True)
+            await inter.response.send_message(
+                f"잠시 후 다시 시도해 주세요. 남은 대기 시간: {remain}초", ephemeral=True
+            )
             return
 
         name = clean_text(name)
@@ -37,7 +39,7 @@ class LinkCog(commands.Cog):
         region = norm_region(region or "ap")
 
         if not name or not tag:
-            await inter.response.send_message("Name and tag must not be empty.", ephemeral=True)
+            await inter.response.send_message("라이엇 ID 이름과 태그를 모두 입력해 주세요.", ephemeral=True)
             return
 
         await inter.response.defer(ephemeral=True)
@@ -46,26 +48,28 @@ class LinkCog(commands.Cog):
             if acc.get("status") != 200:
                 raise RuntimeError("Account not found")
             upsert_link(inter.user.id, name, tag, region)
-            await inter.followup.send(f"Linked: **{name}#{tag}** ({region.upper()})", ephemeral=True)
+            await inter.followup.send(f"연결 완료: **{name}#{tag}** ({region.upper()})", ephemeral=True)
         except Exception as e:
             if is_account_not_found_error(e):
                 await inter.followup.send("계정을 찾을 수 없습니다. 계정 이름과 태그를 확인해 주세요.", ephemeral=True)
             else:
                 err = format_exception_message(e)
-                await inter.followup.send(f"Failed: {err}", ephemeral=True)
+                await inter.followup.send(f"연결에 실패했습니다: {err}", ephemeral=True)
 
-    @app_commands.command(name="unlink", description="Unlink Riot ID")
+    @app_commands.command(name="unlink", description="연결된 라이엇 ID를 해제합니다.")
     async def unlink(self, inter: discord.Interaction):
         if remain := check_cooldown(inter.user.id):
-            await inter.response.send_message(f"Retry later. {remain}s left", ephemeral=True)
+            await inter.response.send_message(
+                f"잠시 후 다시 시도해 주세요. 남은 대기 시간: {remain}초", ephemeral=True
+            )
             return
 
         await inter.response.defer(ephemeral=True)
         info = pop_link(inter.user.id)
         if info:
-            await inter.followup.send(f"Unlinked: {info['name']}#{info['tag']}", ephemeral=True)
+            await inter.followup.send(f"연결 해제: {info['name']}#{info['tag']}", ephemeral=True)
         else:
-            await inter.followup.send("No linked info.", ephemeral=True)
+            await inter.followup.send("연결된 계정이 없습니다.", ephemeral=True)
 
 
 async def setup(bot: commands.Bot):

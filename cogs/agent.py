@@ -11,16 +11,16 @@ class AgentCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="vagent", description="Get agent info (image & description)")
-    @app_commands.describe(name="Agent name, e.g., Jett, Sage, Sova")
+    @app_commands.command(name="vagent", description="요원 정보를 확인합니다 (이미지/설명).")
+    @app_commands.describe(name="요원 이름 (예: 제트, 세이지, 소바)")
     async def vagent(self, inter: discord.Interaction, name: str):
         if remain := check_cooldown(inter.user.id):
-            await inter.response.send_message(f"Retry later. {remain}s left", ephemeral=True)
+            await inter.response.send_message(f"잠시 후 다시 시도해 주세요. 남은 대기 시간: {remain}초", ephemeral=True)
             return
 
         name = clean_text(name)
         if not name:
-            await inter.response.send_message("Agent name cannot be empty.", ephemeral=True)
+            await inter.response.send_message("요원 이름을 입력해 주세요.", ephemeral=True)
             return
 
         await inter.response.defer()
@@ -32,7 +32,7 @@ class AgentCog(commands.Cog):
                 None,
             )
             if not found:
-                await inter.followup.send("Agent not found.")
+                await inter.followup.send("해당 요원을 찾을 수 없습니다.")
                 return
 
             embed = discord.Embed(
@@ -45,12 +45,12 @@ class AgentCog(commands.Cog):
                 embed.set_thumbnail(url=icon)
             role = (found.get("role") or {}).get("displayName", "")
             if role:
-                embed.add_field(name="Role", value=role)
+                embed.add_field(name="역할", value=role)
 
             await inter.followup.send(embed=embed)
 
         except Exception as e:
-            await inter.followup.send(f"Error: {e}")
+            await inter.followup.send(f"오류가 발생했습니다: {e}")
 
 
 async def setup(bot: commands.Bot):
