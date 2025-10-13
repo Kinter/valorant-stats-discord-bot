@@ -33,7 +33,7 @@ class MatchesCog(commands.Cog):
     vmatches_mode_desc = locale_str("Game mode filter", ko="게임 모드 필터")
     vmatches_map_desc = locale_str("Map filter", ko="맵 필터")
     vmatches_target_desc = locale_str(
-        "Registered alias to inspect (empty = your linked account)", ko="조회할 등록 별칭 (비우면 내 계정)"
+        "Registered alias to inspect (empty = your linked account)", ko="조회할 등록 별명 (비우면 내 계정)"
     )
 
     @app_commands.command(
@@ -65,7 +65,7 @@ class MatchesCog(commands.Cog):
         if alias_input:
             alias_info = get_alias(alias_input)
             if not alias_info:
-                await inter.response.send_message(f"`{alias_input}` 별칭을 찾을 수 없습니다.", ephemeral=True)
+                await inter.response.send_message(f"`{alias_input}` 별명을 찾을 수 없습니다.", ephemeral=True)
                 return
             name = alias_info["name"]
             tag = alias_info["tag"]
