@@ -1,5 +1,6 @@
 import discord
 from discord import app_commands
+from discord.app_commands import locale_str
 from discord.ext import commands
 
 from core.utils import check_cooldown, clean_text
@@ -11,8 +12,16 @@ class AgentCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="vagent", description="요원 정보를 확인합니다 (이미지/설명).")
-    @app_commands.describe(name="요원 이름 (예: 제트, 세이지, 소바)")
+    vagent_name_desc = locale_str("Agent name (e.g., Jett, Sage, Sova)")
+    vagent_name_desc.localize("ko", "요원 이름 (예: 제트, 세이지, 소바)")
+
+    @app_commands.command(
+        name="vagent",
+        description="Get agent info (image and description).",
+        name_localizations={"ko": "요원정보"},
+        description_localizations={"ko": "요원 정보를 확인합니다 (이미지/설명)."},
+    )
+    @app_commands.describe(name=vagent_name_desc)
     async def vagent(self, inter: discord.Interaction, name: str):
         if remain := check_cooldown(inter.user.id):
             await inter.response.send_message(f"잠시 후 다시 시도해 주세요. 남은 대기 시간: {remain}초", ephemeral=True)

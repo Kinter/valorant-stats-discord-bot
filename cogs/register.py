@@ -2,6 +2,7 @@ from typing import Optional, List, Tuple, Dict, Any
 
 import discord
 from discord import app_commands
+from discord.app_commands import locale_str
 from discord.ext import commands
 
 from core.config import HENRIK_BASE, TIERS_DIR
@@ -24,12 +25,26 @@ class RegisterCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @app_commands.command(name="register", description="별칭을 등록해 플레이어를 빠르게 조회합니다.")
+    register_alias_desc = locale_str("Alias to reference later")
+    register_alias_desc.localize("ko", "나중에 사용할 별칭")
+    register_name_desc = locale_str("Riot ID name")
+    register_name_desc.localize("ko", "라이엇 ID 이름")
+    register_tag_desc = locale_str("Riot ID tag")
+    register_tag_desc.localize("ko", "라이엇 ID 태그")
+    register_region_desc = locale_str("Valorant region (ap/kr/eu/na/...)")
+    register_region_desc.localize("ko", "발로란트 지역 (ap/kr/eu/na/...)")
+
+    @app_commands.command(
+        name="register",
+        description="Register an alias to look up players quickly.",
+        name_localizations={"ko": "별칭등록"},
+        description_localizations={"ko": "별칭을 등록해 플레이어를 빠르게 조회합니다."},
+    )
     @app_commands.describe(
-        alias="나중에 사용할 별칭",
-        name="라이엇 ID 이름",
-        tag="라이엇 ID 태그",
-        region="발로란트 지역 (ap/kr/eu/na/...)",
+        alias=register_alias_desc,
+        name=register_name_desc,
+        tag=register_tag_desc,
+        region=register_region_desc,
     )
     async def register(
         self,
@@ -78,8 +93,16 @@ class RegisterCog(commands.Cog):
                 err = format_exception_message(e)
                 await inter.followup.send(f"등록에 실패했습니다: {err}", ephemeral=True)
 
-    @app_commands.command(name="unregister", description="등록된 별칭을 삭제합니다.")
-    @app_commands.describe(alias="삭제할 별칭")
+    unregister_alias_desc = locale_str("Alias to remove")
+    unregister_alias_desc.localize("ko", "삭제할 별칭")
+
+    @app_commands.command(
+        name="unregister",
+        description="Remove a registered alias.",
+        name_localizations={"ko": "별칭삭제"},
+        description_localizations={"ko": "등록된 별칭을 삭제합니다."},
+    )
+    @app_commands.describe(alias=unregister_alias_desc)
     async def unregister(self, inter: discord.Interaction, alias: str):
         alias = clean_text(alias)
         if not alias:
@@ -97,7 +120,12 @@ class RegisterCog(commands.Cog):
         else:
             await inter.followup.send(f"별칭 **{alias}** 을(를) 찾을 수 없습니다.", ephemeral=True)
 
-    @app_commands.command(name="aliases", description="등록된 별칭 목록을 보여줍니다.")
+    @app_commands.command(
+        name="aliases",
+        description="List registered aliases.",
+        name_localizations={"ko": "별칭목록"},
+        description_localizations={"ko": "등록된 별칭 목록을 보여줍니다."},
+    )
     async def aliases(self, inter: discord.Interaction):
         if remain := check_cooldown(inter.user.id):
             await inter.response.send_message(f"잠시 후 다시 시도해 주세요. 남은 대기 시간: {remain}초")

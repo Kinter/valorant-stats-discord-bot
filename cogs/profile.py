@@ -2,6 +2,7 @@ from typing import Optional, List
 
 import discord
 from discord import app_commands
+from discord.app_commands import locale_str
 from discord.ext import commands
 
 from core.config import HENRIK_BASE
@@ -27,8 +28,16 @@ class ProfileCog(commands.Cog):
             return None
         return info["name"], info["tag"], info.get("region", "ap")
 
-    @app_commands.command(name="vprofile", description="연결된 라이엇 ID의 프로필과 MMR을 확인합니다.")
-    @app_commands.describe(target="조회할 등록 별칭 (비우면 내 계정)")
+    vprofile_target_desc = locale_str("Registered alias to inspect (empty = your linked account)")
+    vprofile_target_desc.localize("ko", "조회할 등록 별칭 (비우면 내 계정)")
+
+    @app_commands.command(
+        name="vprofile",
+        description="View the profile and MMR of your linked Riot ID.",
+        name_localizations={"ko": "프로필"},
+        description_localizations={"ko": "연결된 라이엇 ID의 프로필과 MMR을 확인합니다."},
+    )
+    @app_commands.describe(target=vprofile_target_desc)
     async def vprofile(self, inter: discord.Interaction, target: Optional[str] = None):
         if remain := check_cooldown(inter.user.id):
             await inter.response.send_message(f"잠시 후 다시 시도해 주세요. 남은 대기 시간: {remain}초", ephemeral=True)

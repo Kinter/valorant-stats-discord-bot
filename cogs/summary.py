@@ -3,6 +3,7 @@ from typing import Optional, List
 
 import discord
 from discord import app_commands
+from discord.app_commands import locale_str
 from discord.ext import commands
 
 from core.config import HENRIK_BASE, TIERS_DIR
@@ -36,10 +37,20 @@ class SummaryCog(commands.Cog):
             return None
         return info["name"], info["tag"], info.get("region", "ap")
 
-    @app_commands.command(name="vsummary", description="최근 전적 요약 (티어 이미지 / 승률 / KD / 코멘트)")
+    vsummary_count_desc = locale_str("Number of matches (1-10, default 10)")
+    vsummary_count_desc.localize("ko", "1~10, 비우면 10")
+    vsummary_target_desc = locale_str("Registered alias to inspect (empty = your linked account)")
+    vsummary_target_desc.localize("ko", "조회할 등록 별칭 (비우면 내 계정)")
+
+    @app_commands.command(
+        name="vsummary",
+        description="Show recent summary (tier image / win rate / KD / comment).",
+        name_localizations={"ko": "전적요약"},
+        description_localizations={"ko": "최근 전적 요약 (티어 이미지 / 승률 / KD / 코멘트)"},
+    )
     @app_commands.describe(
-        count="1~10, 비우면 10",
-        target="조회할 등록 별칭 (비우면 내 계정)",
+        count=vsummary_count_desc,
+        target=vsummary_target_desc,
     )
     async def vsummary(self, inter: discord.Interaction, count: Optional[int] = None, target: Optional[str] = None):
         if count is None:

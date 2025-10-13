@@ -3,6 +3,7 @@ from typing import Optional, List
 
 import discord
 from discord import app_commands
+from discord.app_commands import locale_str
 from discord.ext import commands
 
 from core.config import HENRIK_BASE
@@ -28,12 +29,26 @@ class MatchesCog(commands.Cog):
             return None
         return info["name"], info["tag"], info.get("region", "ap")
 
-    @app_commands.command(name="vmatches", description="최근 경기 K/D/A 요약을 보여줍니다.")
+    vmatches_count_desc = locale_str("Number of matches to fetch (1-10)")
+    vmatches_count_desc.localize("ko", "조회할 경기 수 (1~10)")
+    vmatches_mode_desc = locale_str("Game mode filter")
+    vmatches_mode_desc.localize("ko", "게임 모드 필터")
+    vmatches_map_desc = locale_str("Map filter")
+    vmatches_map_desc.localize("ko", "맵 필터")
+    vmatches_target_desc = locale_str("Registered alias to inspect (empty = your linked account)")
+    vmatches_target_desc.localize("ko", "조회할 등록 별칭 (비우면 내 계정)")
+
+    @app_commands.command(
+        name="vmatches",
+        description="Show recent matches with K/D/A summary.",
+        name_localizations={"ko": "경기요약"},
+        description_localizations={"ko": "최근 경기 K/D/A 요약을 보여줍니다."},
+    )
     @app_commands.describe(
-        count="조회할 경기 수 (1~10)",
-        mode="게임 모드 필터",
-        map="맵 필터",
-        target="조회할 등록 별칭 (비우면 내 계정)",
+        count=vmatches_count_desc,
+        mode=vmatches_mode_desc,
+        map=vmatches_map_desc,
+        target=vmatches_target_desc,
     )
     async def vmatches(
         self,
