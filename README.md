@@ -68,7 +68,7 @@ Set `LOG_LEVEL=DEBUG` if you need more verbose console logs while running the bo
 ### 5. Run the bot
 
 ```bash
-python -m bot
+python -m bot.py
 ```
 
 ### 6. Register aliases
