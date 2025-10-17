@@ -100,6 +100,8 @@ valorant-stats-discord-bot/
 - Add KD / win rate graphs
 - Add `/agentstats`, `/compare` commands
 - Strengthen HenrikDev API error handling
+- Add context menu flow for quick alias lookups
+- Refine `/vsummary` output highlighting (summaries, player name emphasis)
 - Document existing Docker & CI workflow ownership
 
 ---
