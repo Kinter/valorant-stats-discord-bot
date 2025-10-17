@@ -7,7 +7,7 @@ from discord.ext import commands
 
 from core.config import HENRIK_BASE, TIERS_DIR
 from core.http import http_get
-from core.store import get_alias, list_aliases, remove_alias, upsert_alias
+from core.store import list_aliases, remove_alias, upsert_alias
 from core.utils import (
     check_cooldown,
     clean_text,
@@ -26,13 +26,13 @@ class RegisterCog(commands.Cog):
         self.bot = bot
 
     register_alias_desc = locale_str("Alias to reference later", ko="나중에 사용할 별명")
-    register_name_desc = locale_str("Riot ID name", ko="라이엇 ID 이름")
-    register_tag_desc = locale_str("Riot ID tag", ko="라이엇 ID 태그")
-    register_region_desc = locale_str("Valorant region (ap/kr/eu/na/...)", ko="발로란트 지역 (ap/kr/eu/na/...)")
+    register_name_desc = locale_str("Riot ID name", ko="Riot ID 이름")
+    register_tag_desc = locale_str("Riot ID tag", ko="Riot ID 태그")
+    register_region_desc = locale_str("Valorant region (ap/kr/eu/na/...)", ko="발로란트 지역(ap/kr/eu/na/...)")
 
     @app_commands.command(
         name="별명등록",
-        description="Riot ID를 별명을 통해 등록할 수 있습니다.",
+        description="입력한 Riot ID에 별명을 등록합니다.",
     )
     @app_commands.describe(
         alias=register_alias_desc,
@@ -47,23 +47,26 @@ class RegisterCog(commands.Cog):
         name: str,
         tag: str,
         region: Optional[str] = None,
-    ):
+    ) -> None:
         alias = clean_text(alias)
         name = clean_text(name)
         tag = clean_text(tag)
         region = norm_region(region or "ap")
+
         if not alias:
-            await inter.response.send_message("별명은 비워둘 수 없습니다.", ephemeral=True)
+            await inter.response.send_message("별명이 비어 있습니다.", ephemeral=True)
             return
         if len(alias) > 32:
-            await inter.response.send_message("별명은 32자 이하로 입력해 주세요.", ephemeral=True)
+            await inter.response.send_message("별명은 32자 이하로 입력해주세요.", ephemeral=True)
             return
         if not name or not tag:
-            await inter.response.send_message("라이엇 ID 이름과 태그를 모두 입력해 주세요.", ephemeral=True)
+            await inter.response.send_message("Riot ID 이름과 태그를 모두 입력해주세요.", ephemeral=True)
             return
 
         if remain := check_cooldown(inter.user.id):
-            await inter.response.send_message(f"잠시 후 다시 시도해 주세요. 남은 대기 시간: {remain}초", ephemeral=True)
+            await inter.response.send_message(
+                f"잠시 후 다시 시도해주세요. 남은 대기시간: {remain}초", ephemeral=True
+            )
             return
 
         await inter.response.defer(ephemeral=True)
@@ -71,6 +74,7 @@ class RegisterCog(commands.Cog):
             acc = await http_get(f"{HENRIK_BASE}/v1/account/{q(name)}/{q(tag)}")
             if acc.get("status") != 200:
                 raise RuntimeError("Account not found")
+
             data = acc.get("data") or {}
             puuid = data.get("puuid")
             if not puuid:
@@ -82,7 +86,10 @@ class RegisterCog(commands.Cog):
             )
         except Exception as e:
             if is_account_not_found_error(e):
-                await inter.followup.send("계정을 찾을 수 없습니다. 계정 이름과 태그를 확인해 주세요.", ephemeral=True)
+                await inter.followup.send(
+                    "계정을 찾을 수 없습니다. Riot ID 이름과 태그를 다시 확인해주세요.",
+                    ephemeral=True,
+                )
             else:
                 err = format_exception_message(e)
                 await inter.followup.send(f"등록에 실패했습니다: {err}", ephemeral=True)
@@ -90,18 +97,20 @@ class RegisterCog(commands.Cog):
     unregister_alias_desc = locale_str("Alias to remove", ko="삭제할 별명")
 
     @app_commands.command(
-        name="unregister",
-        description="Remove a registered alias.",
+        name="별명삭제",
+        description="등록된 Riot ID 별명을 삭제합니다.",
     )
     @app_commands.describe(alias=unregister_alias_desc)
-    async def unregister(self, inter: discord.Interaction, alias: str):
+    async def unregister(self, inter: discord.Interaction, alias: str) -> None:
         alias = clean_text(alias)
         if not alias:
-            await inter.response.send_message("별명은 비워둘 수 없습니다.", ephemeral=True)
+            await inter.response.send_message("별명이 비어 있습니다.", ephemeral=True)
             return
 
         if remain := check_cooldown(inter.user.id):
-            await inter.response.send_message(f"잠시 후 다시 시도해 주세요. 남은 대기 시간: {remain}초", ephemeral=True)
+            await inter.response.send_message(
+                f"잠시 후 다시 시도해주세요. 남은 대기시간: {remain}초", ephemeral=True
+            )
             return
 
         await inter.response.defer(ephemeral=True)
@@ -112,22 +121,24 @@ class RegisterCog(commands.Cog):
             await inter.followup.send(f"별명 **{alias}** 을(를) 찾을 수 없습니다.", ephemeral=True)
 
     @app_commands.command(
-        name="aliases",
-        description="List registered aliases.",
+        name="별명목록",
+        description="등록된 Riot ID 별명 목록을 확인합니다.",
     )
-    async def aliases(self, inter: discord.Interaction):
+    async def list_aliases_command(self, inter: discord.Interaction) -> None:
         if remain := check_cooldown(inter.user.id):
-            await inter.response.send_message(f"잠시 후 다시 시도해 주세요. 남은 대기 시간: {remain}초")
+            await inter.response.send_message(
+                f"잠시 후 다시 시도해주세요. 남은 대기시간: {remain}초", ephemeral=True
+            )
             return
 
         records = list_aliases()
         if not records:
-            await inter.response.send_message("등록된 별명이 없습니다.")
+            await inter.response.send_message("등록된 별명이 없습니다.", ephemeral=True)
             return
 
         await inter.response.defer()
 
-        embeds_payload: List[Tuple[discord.Embed, str | None]] = []
+        embeds_payload: List[Tuple[discord.Embed, Optional[str]]] = []
         for rec in records:
             tier_name, image_url = await self._fetch_tier(rec)
             embed = discord.Embed(
@@ -135,10 +146,10 @@ class RegisterCog(commands.Cog):
                 color=discord.Color.blurple(),
             )
             embed.set_author(name=rec["alias"])
-            display_tier = tier_name if tier_name and tier_name != "Unrated" else "언레이트"
+            display_tier = tier_name if tier_name and tier_name != "Unrated" else "언레이디드"
             embed.add_field(name="티어", value=display_tier or TIER_NOT_FOUND_LABEL, inline=False)
 
-            local_path: str | None = None
+            local_path: Optional[str] = None
             if image_url:
                 embed.set_thumbnail(url=image_url)
             else:
@@ -150,7 +161,7 @@ class RegisterCog(commands.Cog):
 
         await self._send_alias_embeds(inter, embeds_payload)
 
-    async def _fetch_tier(self, record: Dict[str, Any]) -> Tuple[str, str | None]:
+    async def _fetch_tier(self, record: Dict[str, Any]) -> Tuple[str, Optional[str]]:
         name = record.get("name", "")
         tag = record.get("tag", "")
         region = record.get("region", "ap")
@@ -164,7 +175,7 @@ class RegisterCog(commands.Cog):
         except Exception:
             return TIER_NOT_FOUND_LABEL, None
 
-    def _local_tier_image(self, tier_name: str | None):
+    def _local_tier_image(self, tier_name: Optional[str]):
         key = tier_key(tier_name or TIER_NOT_FOUND_LABEL)
         path = TIERS_DIR / f"{key}.png"
         return path if path.exists() else None
@@ -172,7 +183,7 @@ class RegisterCog(commands.Cog):
     async def _send_alias_embeds(
         self,
         inter: discord.Interaction,
-        payload: List[Tuple[discord.Embed, str | None]],
+        payload: List[Tuple[discord.Embed, Optional[str]]],
     ) -> None:
         if not payload:
             await inter.followup.send("등록된 별명이 없습니다.")
@@ -204,5 +215,5 @@ class RegisterCog(commands.Cog):
                 await inter.followup.send(**kwargs)
 
 
-async def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(RegisterCog(bot))
