@@ -16,7 +16,7 @@ class AgentCog(commands.Cog):
 
     @app_commands.command(
         name="요원정보",
-        description="요원 정보를 확인합니다 (이미지와 설명).",
+        description="요원 정보를 확인합니다(역할과 설명 포함).",
     )
     @app_commands.describe(name=vagent_name_desc)
     async def vagent(self, inter: discord.Interaction, name: str):

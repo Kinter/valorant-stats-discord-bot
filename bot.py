@@ -48,7 +48,6 @@ def _describe_context(user: discord.abc.User, guild: Optional[discord.Guild]) ->
     return f"{user_repr} in {guild.name} (ID: {guild.id})"
 
 COGS = [
-    "cogs.link",
     "cogs.register",
     "cogs.summary",
     "cogs.profile",
