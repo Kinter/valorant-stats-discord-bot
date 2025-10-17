@@ -9,8 +9,8 @@ This project is **unofficial** and uses the [HenrikDev API](https://docs.henrikd
 
 ## Features
 
-- `/register` : Register a Riot ID under a shared alias (required for stat commands)
-- `/aliases` : List registered aliases
+- `/별명등록` : Register a Riot ID under a shared alias (required for stat commands)
+- `/별명목록` : List registered aliases
 - `/vprofile` : View profile and MMR for a registered alias
 - `/vmatches` : Show recent matches with map/mode/W-L/KDA summary (alias based)
 - `/vsummary` : Show summarized stats (win rate, KD, tier image, fun comment)
@@ -73,7 +73,7 @@ python -m bot.py
 
 ### 6. Register aliases
 
-Use `/register alias name tag region` in Discord to store a Riot ID under a friendly alias.  
+Use `/별명등록 alias name tag region` in Discord to store a Riot ID under a friendly alias.  
 All stat commands (`/vsummary`, `/vprofile`, `/vmatches`) now require an alias.  
 Each fetch caches the latest match data in `data/bot.sqlite3` for later inspection.
 
@@ -94,13 +94,13 @@ valorant-stats-discord-bot/
 
 ---
 
-## TODO
-
-- [ ] Improve `/vmatches` output (highlight W/L)
-- [ ] Add KD / win rate graphs
-- [ ] Add `/agentstats`, `/compare` commands
-- [ ] Stronger error handling for HenrikDev API
-- [ ] Add deployment pipeline (Docker/GitHub Actions)
+## Notes
+### Remaining ideas / backlog
+- Improve `/vmatches` output (highlight W/L)
+- Add KD / win rate graphs
+- Add `/agentstats`, `/compare` commands
+- Strengthen HenrikDev API error handling
+- Document existing Docker & CI workflow ownership
 
 ---
 
