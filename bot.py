@@ -54,6 +54,7 @@ COGS = [
     "cogs.matches",
     "cogs.agent",
     "cogs.admin",
+    "cogs.alerts",
 ]
 
 
@@ -111,7 +112,7 @@ async def on_ready():
     logging.info(f"[GUILDS] {len(bot.guilds)} connected")
     for g in bot.guilds:
         m = getattr(g, "member_count", "?")
-        logging.info(f" - {g.name} (ID: {g.id}) members≈{m}")
+        logging.info(f" - {g.name} (ID: {g.id}) members: {m}")
     logging.info(f"Logged in as {bot.user} (ID: {bot.user.id})")
 
 async def main():

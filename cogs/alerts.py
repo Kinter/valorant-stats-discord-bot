@@ -1,0 +1,207 @@
+import asyncio
+import logging
+from typing import Dict, Optional, List, Tuple, Any
+
+import discord
+from discord.ext import commands, tasks
+
+from core.config import HENRIK_BASE
+from core.http import http_get
+from core.store import (
+    list_aliases,
+    latest_match,
+    store_match_batch,
+    list_alert_channels,
+)
+from core.utils import q
+
+
+log = logging.getLogger(__name__)
+
+
+class AlertCog(commands.Cog):
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+        self._last_seen: Dict[str, str] = {}
+        self._bootstrapped = False
+        self.poll_matches.start()
+
+    def cog_unload(self) -> None:
+        self.poll_matches.cancel()
+
+    def _bootstrap_last_seen(self) -> None:
+        for record in list_aliases():
+            owner_key = f"alias:{record['alias_norm']}"
+            latest = latest_match(owner_key)
+            if latest and latest.get("match_id"):
+                self._last_seen[owner_key] = latest["match_id"]
+        self._bootstrapped = True
+        log.info("[ALERT] Bootstrapped last seen matches for %s aliases", len(self._last_seen))
+
+    @tasks.loop(minutes=5)
+    async def poll_matches(self) -> None:
+        await self.bot.wait_until_ready()
+
+        if not self._bootstrapped:
+            self._bootstrap_last_seen()
+
+        aliases = list_aliases()
+        if not aliases:
+            return
+
+        for entry in aliases:
+            owner_key = f"alias:{entry['alias_norm']}"
+            try:
+                await self._process_alias(entry, owner_key)
+            except Exception:
+                log.exception("[ALERT] Failed to process alias %s", owner_key)
+            await asyncio.sleep(1)
+
+    async def _process_alias(self, entry: Dict[str, Any], owner_key: str) -> None:
+        name = entry["name"]
+        tag = entry["tag"]
+        region = entry.get("region", "ap")
+        puuid = entry.get("puuid")
+
+        params = {"size": "1"}
+        data = await http_get(f"{HENRIK_BASE}/v3/matches/{region}/{q(name)}/{q(tag)}", params=params)
+        matches = data.get("data") or []
+        if not matches:
+            return
+
+        match = matches[0]
+        match_id = self._match_id(match)
+        if not match_id:
+            return
+
+        if self._last_seen.get(owner_key) == match_id:
+            return
+
+        stored = store_match_batch(owner_key, puuid, [match])
+        if stored == 0:
+            # Already persisted previously; avoid duplicate alerts
+            self._last_seen[owner_key] = match_id
+            return
+
+        self._last_seen[owner_key] = match_id
+        embed = self._build_embed(entry, match, match_id)
+        await self._dispatch_alert(embed)
+
+    def _match_id(self, match: Dict[str, Any]) -> Optional[str]:
+        metadata = match.get("metadata") or {}
+        return (
+            metadata.get("matchid")
+            or metadata.get("matchId")
+            or metadata.get("matchID")
+            or match.get("match_id")
+        )
+
+    def _build_embed(self, entry: Dict[str, Any], match: Dict[str, Any], match_id: str) -> discord.Embed:
+        metadata = match.get("metadata") or {}
+        map_name = metadata.get("map", "?")
+        mode_name = metadata.get("mode", "?")
+        started = metadata.get("game_start_patched") or metadata.get("game_start") or "Unknown"
+        player_stats, outcome = self._extract_player_stats(entry.get("puuid"), match)
+
+        color = discord.Color.from_rgb(149, 165, 166)  # default grey
+        result_label = "결과 정보 없음"
+        if outcome == "win":
+            color = discord.Color.from_rgb(46, 204, 113)
+            result_label = "승리"
+        elif outcome == "loss":
+            color = discord.Color.from_rgb(231, 76, 60)
+            result_label = "패배"
+
+        embed = discord.Embed(
+            title=f"{entry['alias']} 최신 경기",
+            description=f"{map_name} · {mode_name}",
+            color=color,
+        )
+        embed.add_field(name="Riot ID", value=f"{entry['name']}#{entry['tag']}", inline=True)
+        embed.add_field(name="결과", value=result_label, inline=True)
+
+        if player_stats:
+            k = player_stats.get("kills", 0)
+            d = player_stats.get("deaths", 0)
+            a = player_stats.get("assists", 0)
+            embed.add_field(name="K/D/A", value=f"{k}/{d}/{a}", inline=True)
+
+        rounds = self._round_score(match, outcome)
+        if rounds:
+            embed.add_field(name="라운드 스코어", value=rounds, inline=True)
+
+        embed.set_footer(text=f"경기 시작: {started}")
+        embed.timestamp = discord.utils.utcnow()
+        embed.url = f"https://tracker.gg/valorant/match/{match_id}"
+        return embed
+
+    def _extract_player_stats(self, puuid: Optional[str], match: Dict[str, Any]) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+        if not puuid:
+            return None, None
+        players = (match.get("players") or {}).get("all_players") or []
+        me = next((p for p in players if p.get("puuid") == puuid), None)
+        if me is None:
+            return None, None
+
+        team = me.get("team")
+        outcome = None
+        if team and isinstance(match.get("teams"), dict):
+            team_info = match["teams"].get(team) or {}
+            has_won = team_info.get("has_won")
+            if has_won is True:
+                outcome = "win"
+            elif has_won is False:
+                outcome = "loss"
+
+        return me.get("stats") or {}, outcome
+
+    def _round_score(self, match: Dict[str, Any], outcome: Optional[str]) -> Optional[str]:
+        teams = match.get("teams")
+        if not isinstance(teams, dict):
+            return None
+
+        scores: List[str] = []
+        for name, info in teams.items():
+            if not isinstance(info, dict):
+                continue
+            rounds_won = info.get("rounds_won")
+            if rounds_won is None:
+                continue
+            has_won = info.get("has_won")
+            label = name.title()
+            if has_won is True:
+                label = "우리 팀" if outcome == "win" else "상대 팀"
+            elif has_won is False:
+                label = "우리 팀" if outcome == "loss" else "상대 팀"
+            scores.append(f"{label}: {rounds_won}")
+        return "\n".join(scores) if scores else None
+
+    async def _dispatch_alert(self, embed: discord.Embed) -> None:
+        targets = list_alert_channels()
+        if not targets:
+            return
+
+        for entry in targets:
+            guild = self.bot.get_guild(entry["guild_id"])
+            if not guild:
+                continue
+            channel = guild.get_channel(entry["channel_id"])
+            if channel is None:
+                try:
+                    channel = await guild.fetch_channel(entry["channel_id"])
+                except (discord.Forbidden, discord.HTTPException):
+                    continue
+            if not isinstance(channel, (discord.TextChannel, discord.Thread)):
+                continue
+            try:
+                await channel.send(embed=embed)
+            except discord.HTTPException:
+                log.exception(
+                    "[ALERT] Failed to send alert to guild=%s channel=%s",
+                    entry["guild_id"],
+                    entry["channel_id"],
+                )
+
+
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(AlertCog(bot))

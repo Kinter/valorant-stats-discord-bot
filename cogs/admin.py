@@ -1,7 +1,10 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
+
 from core.config import GUILD_ID
+from core.store import set_alert_channel, remove_alert_channel, get_alert_channel
+
 
 class AdminCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -31,6 +34,34 @@ class AdminCog(commands.Cog):
             await inter.followup.send("\n".join(responses), ephemeral=True)
         except Exception as e:
             await inter.followup.send(f"Resync error: {e}", ephemeral=True)
+
+    @app_commands.command(name="알림채널설정", description="실시간 경기 알림을 게시할 채널을 설정합니다.")
+    @app_commands.describe(channel="알림을 보낼 텍스트 채널")
+    @app_commands.guild_only()
+    async def set_alert_channel_cmd(self, inter: discord.Interaction, channel: discord.TextChannel):
+        if not inter.user.guild_permissions.manage_guild:
+            await inter.response.send_message("이 명령을 실행하려면 서버 관리 권한이 필요합니다.", ephemeral=True)
+            return
+        set_alert_channel(inter.guild_id, channel.id)
+        await inter.response.send_message(
+            f"실시간 경기 알림 채널이 {channel.mention} 으로 설정되었습니다.", ephemeral=True
+        )
+
+    @app_commands.command(name="알림채널해제", description="실시간 경기 알림 채널 설정을 해제합니다.")
+    @app_commands.guild_only()
+    async def clear_alert_channel_cmd(self, inter: discord.Interaction):
+        if not inter.user.guild_permissions.manage_guild:
+            await inter.response.send_message("이 명령을 실행하려면 서버 관리 권한이 필요합니다.", ephemeral=True)
+            return
+
+        existing = get_alert_channel(inter.guild_id)
+        if existing is None:
+            await inter.response.send_message("등록된 알림 채널이 없습니다.", ephemeral=True)
+            return
+
+        remove_alert_channel(inter.guild_id)
+        await inter.response.send_message("실시간 경기 알림 채널 설정이 해제되었습니다.", ephemeral=True)
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(AdminCog(bot))

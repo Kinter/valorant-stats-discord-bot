@@ -1,7 +1,7 @@
 import json
 import sqlite3
 import time
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List, Tuple, Optional
 
 from .config import DB_FILE
 
@@ -48,6 +48,50 @@ def _ensure_schema() -> None:
 
             CREATE INDEX IF NOT EXISTS idx_match_cache_owner
             ON match_cache (owner_key, played_at DESC, ts DESC);
+
+            CREATE TABLE IF NOT EXISTS daily_summary (
+                summary_date TEXT NOT NULL,
+                owner_key    TEXT NOT NULL,
+                alias_norm   TEXT NOT NULL,
+                puuid        TEXT NOT NULL,
+                matches      INTEGER NOT NULL,
+                wins         INTEGER NOT NULL,
+                losses       INTEGER NOT NULL,
+                rr_delta     INTEGER NOT NULL,
+                kills        INTEGER NOT NULL,
+                deaths       INTEGER NOT NULL,
+                assists      INTEGER NOT NULL,
+                ts           INTEGER NOT NULL,
+                PRIMARY KEY (summary_date, owner_key)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_daily_summary_alias
+            ON daily_summary (summary_date, alias_norm);
+
+            CREATE TABLE IF NOT EXISTS act_summary (
+                act_id    TEXT NOT NULL,
+                owner_key TEXT NOT NULL,
+                alias_norm TEXT NOT NULL,
+                puuid      TEXT NOT NULL,
+                matches    INTEGER NOT NULL,
+                wins       INTEGER NOT NULL,
+                losses     INTEGER NOT NULL,
+                rr_delta   INTEGER NOT NULL,
+                kills      INTEGER NOT NULL,
+                deaths     INTEGER NOT NULL,
+                assists    INTEGER NOT NULL,
+                ts         INTEGER NOT NULL,
+                PRIMARY KEY (act_id, owner_key)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_act_summary_alias
+            ON act_summary (act_id, alias_norm);
+
+            CREATE TABLE IF NOT EXISTS alert_channels (
+                guild_id   INTEGER PRIMARY KEY,
+                channel_id INTEGER NOT NULL,
+                ts         INTEGER NOT NULL
+            );
             """
         )
 
@@ -223,6 +267,188 @@ def store_match_batch(owner_key: str, puuid: str, matches: Iterable[Dict[str, An
             rows,
         )
     return len(rows)
+
+
+def latest_match(owner_key: str) -> Dict[str, Any] | None:
+    with _connect() as conn:
+        row = conn.execute(
+            """
+            SELECT match_id, owner_key, puuid, map, mode, team, result, kills, deaths,
+                   assists, played_at, raw_json, ts
+            FROM match_cache
+            WHERE owner_key = ?
+            ORDER BY played_at DESC, ts DESC
+            LIMIT 1
+            """,
+            (owner_key,),
+        ).fetchone()
+    return _row_to_dict(row)
+
+
+def upsert_daily_summary(
+    summary_date: str,
+    owner_key: str,
+    alias_norm: str,
+    puuid: str,
+    *,
+    matches: int,
+    wins: int,
+    losses: int,
+    rr_delta: int,
+    kills: int,
+    deaths: int,
+    assists: int,
+) -> None:
+    now = int(time.time())
+    with _connect() as conn:
+        conn.execute(
+            """
+            INSERT INTO daily_summary (
+                summary_date, owner_key, alias_norm, puuid,
+                matches, wins, losses, rr_delta, kills, deaths, assists, ts
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(summary_date, owner_key) DO UPDATE SET
+                matches=excluded.matches,
+                wins=excluded.wins,
+                losses=excluded.losses,
+                rr_delta=excluded.rr_delta,
+                kills=excluded.kills,
+                deaths=excluded.deaths,
+                assists=excluded.assists,
+                ts=excluded.ts
+            """,
+            (
+                summary_date,
+                owner_key,
+                alias_norm,
+                puuid,
+                matches,
+                wins,
+                losses,
+                rr_delta,
+                kills,
+                deaths,
+                assists,
+                now,
+            ),
+        )
+
+
+def fetch_daily_summary(summary_date: str) -> List[Dict[str, Any]]:
+    with _connect() as conn:
+        rows = conn.execute(
+            """
+            SELECT summary_date, owner_key, alias_norm, puuid,
+                   matches, wins, losses, rr_delta, kills, deaths, assists, ts
+            FROM daily_summary
+            WHERE summary_date = ?
+            ORDER BY wins DESC, matches DESC, alias_norm ASC
+            """,
+            (summary_date,),
+        ).fetchall()
+    return [_row_to_dict(r) for r in rows]
+
+
+def upsert_act_summary(
+    act_id: str,
+    owner_key: str,
+    alias_norm: str,
+    puuid: str,
+    *,
+    matches: int,
+    wins: int,
+    losses: int,
+    rr_delta: int,
+    kills: int,
+    deaths: int,
+    assists: int,
+) -> None:
+    now = int(time.time())
+    with _connect() as conn:
+        conn.execute(
+            """
+            INSERT INTO act_summary (
+                act_id, owner_key, alias_norm, puuid,
+                matches, wins, losses, rr_delta, kills, deaths, assists, ts
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(act_id, owner_key) DO UPDATE SET
+                matches=excluded.matches,
+                wins=excluded.wins,
+                losses=excluded.losses,
+                rr_delta=excluded.rr_delta,
+                kills=excluded.kills,
+                deaths=excluded.deaths,
+                assists=excluded.assists,
+                ts=excluded.ts
+            """,
+            (
+                act_id,
+                owner_key,
+                alias_norm,
+                puuid,
+                matches,
+                wins,
+                losses,
+                rr_delta,
+                kills,
+                deaths,
+                assists,
+                now,
+            ),
+        )
+
+
+def fetch_act_summary(act_id: str) -> List[Dict[str, Any]]:
+    with _connect() as conn:
+        rows = conn.execute(
+            """
+            SELECT act_id, owner_key, alias_norm, puuid,
+                   matches, wins, losses, rr_delta, kills, deaths, assists, ts
+            FROM act_summary
+            WHERE act_id = ?
+            ORDER BY rr_delta DESC, wins DESC, alias_norm ASC
+            """,
+            (act_id,),
+        ).fetchall()
+    return [_row_to_dict(r) for r in rows]
+
+
+def set_alert_channel(guild_id: int, channel_id: int) -> None:
+    now = int(time.time())
+    with _connect() as conn:
+        conn.execute(
+            """
+            INSERT INTO alert_channels (guild_id, channel_id, ts)
+            VALUES (?, ?, ?)
+            ON CONFLICT(guild_id) DO UPDATE SET
+                channel_id=excluded.channel_id,
+                ts=excluded.ts
+            """,
+            (guild_id, channel_id, now),
+        )
+
+
+def remove_alert_channel(guild_id: int) -> None:
+    with _connect() as conn:
+        conn.execute("DELETE FROM alert_channels WHERE guild_id = ?", (guild_id,))
+
+
+def get_alert_channel(guild_id: int) -> Optional[int]:
+    with _connect() as conn:
+        row = conn.execute(
+            "SELECT channel_id FROM alert_channels WHERE guild_id = ?", (guild_id,)
+        ).fetchone()
+    return row[0] if row else None
+
+
+def list_alert_channels() -> List[Dict[str, Any]]:
+    with _connect() as conn:
+        rows = conn.execute(
+            "SELECT guild_id, channel_id, ts FROM alert_channels ORDER BY guild_id"
+        ).fetchall()
+    return [_row_to_dict(r) for r in rows]
 
 
 _ensure_schema()
