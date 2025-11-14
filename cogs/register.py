@@ -145,6 +145,29 @@ class RegisterCog(commands.Cog):
 
         await inter.response.defer()
 
+        tier_tasks: Dict[Tuple[str, str, str], asyncio.Task] = {}
+        semaphore = asyncio.Semaphore(3)
+
+        async def fetch_tier_with_cache(record: Dict[str, Any]) -> Tuple[str, Optional[str]]:
+            key = (
+                record.get("region", "ap"),
+                record.get("name", ""),
+                record.get("tag", ""),
+            )
+            task = tier_tasks.get(key)
+            if task is None:
+                async def _task() -> Tuple[str, Optional[str]]:
+                    async with semaphore:
+                        return await self._fetch_tier(record)
+
+                task = asyncio.create_task(_task())
+                tier_tasks[key] = task
+            return await task
+
+        tier_results = await asyncio.gather(
+            *(fetch_tier_with_cache(rec) for rec in records)
+        )
+
         embeds_payload: List[Tuple[discord.Embed, Optional[str]]] = []
 
         tier_results = await asyncio.gather(
