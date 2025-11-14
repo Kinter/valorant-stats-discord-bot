@@ -9,13 +9,15 @@ This project is **unofficial** and uses the [HenrikDev API](https://docs.henrikd
 
 ## Features
 
-- `/별명등록` : Register a Riot ID under a shared alias (required for stat commands)
-- `/별명목록` : List registered aliases
-- `/vprofile` : View profile and MMR for a registered alias
-- `/vmatches` : Show recent matches with map/mode/W-L/KDA summary (alias based)
-- `/vsummary` : Show summarized stats (win rate, KD, tier image, fun comment)
-- `/vagent` : Get information about agents
-- `/resync` : Force resync of slash commands (owner only)
+- `/별명등록` (legacy `/register`) : Register a Riot ID under a shared alias (required for stat commands)
+- `/별명삭제` (legacy `/unregister`) : Remove a previously registered alias
+- `/별명목록` (legacy `/aliases`) : List registered aliases
+- `/프로필` (legacy `/vprofile`) : View profile and MMR for a registered alias
+- `/최근경기` (legacy `/vmatches`) : Show recent matches with map/mode/W-L/KDA summary (alias based)
+- `/최근전적요약` (legacy `/vsummary`) : Show summarized stats (win rate, KD, tier image, fun comment)
+- `/요원정보` (legacy `/vagent`) : Get information about agents
+- `/명령동기화` (legacy `/resync`) : Force resync of slash commands (owner only)
+- `/알림채널설정` / `/알림채널해제` : Configure live match alert channels for the server
 
 ---
 
@@ -73,8 +75,8 @@ python -m bot.py
 
 ### 6. Register aliases
 
-Use `/별명등록 alias name tag region` in Discord to store a Riot ID under a friendly alias.  
-All stat commands (`/vsummary`, `/vprofile`, `/vmatches`) now require an alias.  
+Use `/별명등록 alias name tag region` in Discord to store a Riot ID under a friendly alias.
+All stat commands (`/최근전적요약`, `/프로필`, `/최근경기`; legacy `/vsummary`, `/vprofile`, `/vmatches`) now require an alias.
 Each fetch caches the latest match data in `data/bot.sqlite3` for later inspection.
 
 ---
@@ -96,12 +98,12 @@ valorant-stats-discord-bot/
 
 ## Notes
 ### Remaining ideas / backlog
-- Improve `/vmatches` output (highlight W/L)
+- Improve `/최근경기` output (highlight W/L)
 - Add KD / win rate graphs
 - Add `/agentstats`, `/compare` commands
 - Strengthen HenrikDev API error handling
 - Add context menu flow for quick alias lookups
-- Refine `/vsummary` output highlighting (summaries, player name emphasis)
+- Refine `/최근전적요약` output highlighting (summaries, player name emphasis)
 - Document existing Docker & CI workflow ownership
 
 ---
