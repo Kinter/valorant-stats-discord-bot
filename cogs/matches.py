@@ -6,6 +6,7 @@ from discord import app_commands
 from discord.app_commands import locale_str
 from discord.ext import commands
 
+from core.api import fetch_player_info
 from core.config import HENRIK_BASE
 from core.http import http_get
 from core.store import get_alias, search_aliases, store_match_batch
@@ -84,10 +85,8 @@ class MatchesCog(commands.Cog):
 
         await inter.response.defer()
         try:
-            acc = await http_get(f"{HENRIK_BASE}/v1/account/{q(name)}/{q(tag)}")
-            puuid = (acc.get("data") or {}).get("puuid")
-            if not puuid:
-                raise RuntimeError("Puuid missing in HenrikDev response")
+            info = await fetch_player_info(name, tag, region=region)
+            puuid = info["puuid"]
 
             params = {"size": str(count)}
             if mode:

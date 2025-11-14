@@ -10,12 +10,15 @@ This project is **unofficial** and uses the [HenrikDev API](https://docs.henrikd
 ## Features
 
 - `/별명등록` : Register a Riot ID under a shared alias (required for stat commands)
+- `/별명삭제` : Remove a previously registered alias
 - `/별명목록` : List registered aliases
-- `/vprofile` : View profile and MMR for a registered alias
-- `/vmatches` : Show recent matches with map/mode/W-L/KDA summary (alias based)
-- `/vsummary` : Show summarized stats (win rate, KD, tier image, fun comment)
-- `/vagent` : Get information about agents
-- `/resync` : Force resync of slash commands (owner only)
+- `/프로필` : View profile and MMR for a registered alias
+- `/최근경기` : Show recent matches with map/mode/W-L/KDA summary (alias based)
+- `/최근전적요약` : Show summarized stats (win rate, KD, tier image, fun comment)
+- `/요원정보` : Get information about agents
+- `/명령동기화` : Force resync of slash commands (owner only)
+- `/알림채널설정` : Set the live match alert channel
+- `/알림채널해제` : Clear the live match alert channel setting
 
 ---
 
@@ -68,13 +71,13 @@ Set `LOG_LEVEL=DEBUG` if you need more verbose console logs while running the bo
 ### 5. Run the bot
 
 ```bash
-python -m bot.py
+python bot.py
 ```
 
 ### 6. Register aliases
 
 Use `/별명등록 alias name tag region` in Discord to store a Riot ID under a friendly alias.  
-All stat commands (`/vsummary`, `/vprofile`, `/vmatches`) now require an alias.  
+All stat commands (`/최근전적요약`, `/프로필`, `/최근경기`) now require an alias.
 Each fetch caches the latest match data in `data/bot.sqlite3` for later inspection.
 
 ---
@@ -96,12 +99,12 @@ valorant-stats-discord-bot/
 
 ## Notes
 ### Remaining ideas / backlog
-- Improve `/vmatches` output (highlight W/L)
+- Improve `/최근경기` output (highlight W/L)
 - Add KD / win rate graphs
 - Add `/agentstats`, `/compare` commands
 - Strengthen HenrikDev API error handling
 - Add context menu flow for quick alias lookups
-- Refine `/vsummary` output highlighting (summaries, player name emphasis)
+- Refine `/최근전적요약` output highlighting (summaries, player name emphasis)
 - Document existing Docker & CI workflow ownership
 
 ---
