@@ -10,12 +10,15 @@ This project is **unofficial** and uses the [HenrikDev API](https://docs.henrikd
 ## Features
 
 - `/별명등록` : Register a Riot ID under a shared alias (required for stat commands)
+- `/별명삭제` : Remove a previously registered alias
 - `/별명목록` : List registered aliases
 - `/프로필` : View profile and MMR for a registered alias
 - `/최근경기` : Show recent matches with map/mode/W-L/KDA summary (alias based)
 - `/최근전적요약` : Show summarized stats (win rate, KD, tier image, fun comment)
 - `/요원정보` : Get information about agents
 - `/명령동기화` : Force resync of slash commands (owner only)
+- `/알림채널설정` : Set the live match alert channel
+- `/알림채널해제` : Clear the live match alert channel setting
 
 ---
 
