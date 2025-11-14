@@ -4,6 +4,7 @@ import time
 from typing import Any, Dict, Iterable, List, Tuple, Optional
 
 from .config import DB_FILE
+from .utils import metadata_label
 
 
 def _connect() -> sqlite3.Connection:
@@ -219,8 +220,8 @@ def store_match_batch(owner_key: str, puuid: str, matches: Iterable[Dict[str, An
                 result = "loss"
 
         played_at = metadata.get("game_start_patched") or metadata.get("game_start")
-        map_name = metadata.get("map")
-        mode_name = metadata.get("mode")
+        map_name = metadata_label(metadata, "map", default=None)
+        mode_name = metadata_label(metadata, "mode", default=None)
 
         raw_json = json.dumps(match, ensure_ascii=False)
         rows.append(

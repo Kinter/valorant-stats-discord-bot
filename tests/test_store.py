@@ -51,6 +51,26 @@ class StoreMatchBatchTests(unittest.TestCase):
         repeated = store.store_match_batch(owner_key, puuid, [match])
         self.assertEqual(repeated, 0)
 
+    def test_handles_nested_metadata_labels(self) -> None:
+        owner_key = "alias:test"
+        puuid = "test-puuid"
+        match = _sample_match("match-2", puuid)
+        match["metadata"]["map"] = {
+            "name": "Sunset",
+            "localized": {"ko-KR": "선셋"},
+        }
+        match["metadata"]["mode"] = {
+            "localized": {"en-US": "Swiftplay"},
+        }
+
+        inserted = store.store_match_batch(owner_key, puuid, [match])
+        self.assertEqual(inserted, 1)
+
+        latest = store.latest_match(owner_key)
+        self.assertIsNotNone(latest)
+        self.assertEqual(latest["map"], "Sunset")
+        self.assertEqual(latest["mode"], "Swiftplay")
+
 
 if __name__ == "__main__":
     unittest.main()
