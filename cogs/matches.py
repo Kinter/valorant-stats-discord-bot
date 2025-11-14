@@ -63,7 +63,7 @@ class MatchesCog(commands.Cog):
         alias_input = clean_text(target)
         if not alias_input:
             await inter.response.send_message(
-                ALIAS_REGISTRATION_PROMPT,
+                "별명을 입력해 주세요. 먼저 `/별명등록` 명령으로 Riot ID를 등록할 수 있습니다.",
                 ephemeral=True,
             )
             return
