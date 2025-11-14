@@ -19,6 +19,7 @@ from core.utils import (
     is_account_not_found_error,
     metadata_label,
     q,
+    team_result,
 )
 
 def _find_player(
@@ -159,12 +160,11 @@ class MatchesCog(commands.Cog):
 
                 result = "?"
                 team = me.get("team") if me else None
-                if team and isinstance(match.get("teams"), dict):
-                    has_won = (match["teams"].get(team) or {}).get("has_won")
-                    if has_won is True:
-                        result = "승"
-                    elif has_won is False:
-                        result = "패"
+                outcome = team_result(match.get("teams"), team)
+                if outcome is True:
+                    result = "승"
+                elif outcome is False:
+                    result = "패"
 
                 lines.append(f"{map_name} / {mode_name} · {result} · {k}/{d}/{a}")
 

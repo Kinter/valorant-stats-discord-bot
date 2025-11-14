@@ -76,6 +76,97 @@ def metadata_label(
 
     return candidate or default
 
+
+def _as_int(value: Any) -> Optional[int]:
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, (int, float)):
+        return int(value)
+    if isinstance(value, str):
+        value = value.strip()
+        if not value:
+            return None
+        try:
+            return int(float(value))
+        except ValueError:
+            return None
+    return None
+
+
+def _coerce_boolish(value: Any) -> Optional[bool]:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        if value == 1:
+            return True
+        if value == 0:
+            return False
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if not normalized:
+            return None
+        if normalized in {"win", "won", "victory", "true", "t", "1", "yes", "y"}:
+            return True
+        if normalized in {"loss", "lost", "defeat", "false", "f", "0", "no", "n"}:
+            return False
+    return None
+
+
+def team_outcome_from_entry(entry: Mapping[str, Any] | None) -> Optional[bool]:
+    if not isinstance(entry, Mapping):
+        return None
+
+    result = _coerce_boolish(entry.get("has_won"))
+    if result is None:
+        result = _coerce_boolish(entry.get("won"))
+
+    if result is None:
+        rounds_won = _as_int(entry.get("rounds_won"))
+        rounds_lost = _as_int(entry.get("rounds_lost"))
+        if rounds_won is not None and rounds_lost is not None:
+            if rounds_won > rounds_lost:
+                result = True
+            elif rounds_lost > rounds_won:
+                result = False
+
+    return result
+
+
+def team_result(teams: Mapping[str, Any] | None, team_name: Optional[str]) -> Optional[bool]:
+    if not isinstance(teams, Mapping) or not team_name:
+        return None
+
+    team_clean = clean_text(team_name)
+    if not team_clean:
+        return None
+
+    candidates = (
+        team_name,
+        team_clean,
+        team_clean.lower(),
+        team_clean.upper(),
+        team_clean.capitalize(),
+    )
+
+    for key in candidates:
+        if not key:
+            continue
+        entry = teams.get(key)
+        result = team_outcome_from_entry(entry)
+        if result is not None:
+            return result
+
+    target = team_clean.lower()
+    for key, value in teams.items():
+        if not isinstance(value, Mapping):
+            continue
+        if clean_text(str(key)).lower() == target:
+            result = team_outcome_from_entry(value)
+            if result is not None:
+                return result
+
+    return None
+
 def norm_region(s: str) -> str:
     s = clean_text(s).lower()
     return s if s in REGIONS else "ap"

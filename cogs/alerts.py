@@ -13,7 +13,7 @@ from core.store import (
     store_match_batch,
     list_alert_channels,
 )
-from core.utils import clean_text, metadata_label, q
+from core.utils import clean_text, metadata_label, q, team_outcome_from_entry, team_result
 
 
 log = logging.getLogger(__name__)
@@ -188,13 +188,11 @@ class AlertCog(commands.Cog):
 
         team = me.get("team")
         outcome = None
-        if team and isinstance(match.get("teams"), dict):
-            team_info = match["teams"].get(team) or {}
-            has_won = team_info.get("has_won")
-            if has_won is True:
-                outcome = "win"
-            elif has_won is False:
-                outcome = "loss"
+        result_flag = team_result(match.get("teams"), team)
+        if result_flag is True:
+            outcome = "win"
+        elif result_flag is False:
+            outcome = "loss"
 
         return me.get("stats") or {}, outcome
 
@@ -210,7 +208,7 @@ class AlertCog(commands.Cog):
             rounds_won = info.get("rounds_won")
             if rounds_won is None:
                 continue
-            has_won = info.get("has_won")
+            has_won = team_outcome_from_entry(info)
             label = name.title()
             if has_won is True:
                 label = "우리 팀" if outcome == "win" else "상대 팀"

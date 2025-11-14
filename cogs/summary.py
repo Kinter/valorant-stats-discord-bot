@@ -20,6 +20,7 @@ from core.utils import (
     q,
     tier_key,
     trunc2,
+    team_result,
 )
 
 
@@ -113,12 +114,11 @@ class SummaryCog(commands.Cog):
                 tot_d += d
 
                 team = me.get("team")
-                if team and isinstance(match.get("teams"), dict):
-                    has_won = (match["teams"].get(team) or {}).get("has_won")
-                    if has_won:
-                        wins += 1
-                    else:
-                        losses += 1
+                outcome = team_result(match.get("teams"), team)
+                if outcome is True:
+                    wins += 1
+                elif outcome is False:
+                    losses += 1
 
             total = wins + losses
             winrate = (wins / total * 100) if total else 0

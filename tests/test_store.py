@@ -1,6 +1,6 @@
 import tempfile
-from pathlib import Path
 import unittest
+from pathlib import Path
 
 from core import store
 
@@ -70,6 +70,23 @@ class StoreMatchBatchTests(unittest.TestCase):
         self.assertIsNotNone(latest)
         self.assertEqual(latest["map"], "Sunset")
         self.assertEqual(latest["mode"], "Swiftplay")
+
+    def test_infers_result_from_team_metadata(self) -> None:
+        owner_key = "alias:test"
+        puuid = "test-puuid"
+        match = _sample_match("match-3", puuid)
+        match["players"]["all_players"][0]["team"] = "BLUE"
+        match["teams"] = {
+            "blue": {"has_won": "TRUE", "rounds_won": 13, "rounds_lost": 7},
+            "red": {"has_won": "FALSE", "rounds_won": 7, "rounds_lost": 13},
+        }
+
+        inserted = store.store_match_batch(owner_key, puuid, [match])
+        self.assertEqual(inserted, 1)
+
+        latest = store.latest_match(owner_key)
+        self.assertIsNotNone(latest)
+        self.assertEqual(latest["result"], "win")
 
 
 if __name__ == "__main__":
