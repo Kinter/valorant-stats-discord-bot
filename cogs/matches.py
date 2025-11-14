@@ -11,6 +11,7 @@ from core.config import HENRIK_BASE
 from core.http import http_get
 from core.store import get_alias, search_aliases, store_match_batch
 from core.utils import (
+    ALIAS_REGISTRATION_PROMPT,
     alias_display,
     check_cooldown,
     clean_text,
@@ -62,7 +63,7 @@ class MatchesCog(commands.Cog):
         alias_input = clean_text(target)
         if not alias_input:
             await inter.response.send_message(
-                "별명을 입력해 주세요. 먼저 `/별명등록` 명령으로 Riot ID를 등록할 수 있습니다.",
+                ALIAS_REGISTRATION_PROMPT,
                 ephemeral=True,
             )
             return
