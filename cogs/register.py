@@ -150,6 +150,16 @@ class RegisterCog(commands.Cog):
         tier_results = await asyncio.gather(
             *(self._fetch_tier_with_semaphore(rec) for rec in records)
         )
+        semaphore = asyncio.Semaphore(5)
+
+        async def fetch_tier(record: Dict[str, Any]) -> Tuple[str, Optional[str]]:
+            async with semaphore:
+                try:
+                    return await self._fetch_tier(record)
+                except Exception:
+                    return TIER_NOT_FOUND_LABEL, None
+
+        tier_results = await asyncio.gather(*(fetch_tier(rec) for rec in records))
 
         for rec, (tier_name, image_url) in zip(records, tier_results):
             embed = discord.Embed(
