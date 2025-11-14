@@ -4,6 +4,7 @@ import time
 from typing import Any, Dict, Iterable, List, Tuple, Optional
 
 from .config import DB_FILE
+from .utils import metadata_label, team_result
 
 
 def _connect() -> sqlite3.Connection:
@@ -209,18 +210,12 @@ def store_match_batch(owner_key: str, puuid: str, matches: Iterable[Dict[str, An
         assists = stats.get("assists")
 
         team = me.get("team") if me else None
-        result = None
-        if team and isinstance(match.get("teams"), dict):
-            team_data = match["teams"].get(team, {})
-            has_won = team_data.get("has_won")
-            if has_won is True:
-                result = "win"
-            elif has_won is False:
-                result = "loss"
+        outcome = team_result(match.get("teams"), team)
+        result = "win" if outcome is True else "loss" if outcome is False else None
 
         played_at = metadata.get("game_start_patched") or metadata.get("game_start")
-        map_name = metadata.get("map")
-        mode_name = metadata.get("mode")
+        map_name = metadata_label(metadata, "map", default=None)
+        mode_name = metadata_label(metadata, "mode", default=None)
 
         raw_json = json.dumps(match, ensure_ascii=False)
         rows.append(

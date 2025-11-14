@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Dict, Optional, List, Tuple, Any
+from typing import Any, Dict, List, Optional, Tuple
 
 import discord
 from discord.ext import commands, tasks
@@ -13,10 +13,44 @@ from core.store import (
     store_match_batch,
     list_alert_channels,
 )
-from core.utils import q
+from core.utils import clean_text, metadata_label, q, team_outcome_from_entry, team_result
 
 
 log = logging.getLogger(__name__)
+
+
+def _find_player(
+    all_players: List[Dict[str, Any]],
+    *,
+    puuid: Optional[str],
+    name: Optional[str] = None,
+    tag: Optional[str] = None,
+):
+    puuid_norm = clean_text(puuid).lower() if puuid else ""
+    if puuid_norm:
+        for player in all_players:
+            candidate = clean_text(player.get("puuid")).lower()
+            if candidate and candidate == puuid_norm:
+                return player
+
+    name_norm = clean_text(name).lower()
+    tag_norm = clean_text(tag).upper()
+    if name_norm and tag_norm:
+        for player in all_players:
+            player_name = clean_text(
+                player.get("game_name")
+                or player.get("gameName")
+                or player.get("name")
+            ).lower()
+            player_tag = clean_text(
+                player.get("tag_line")
+                or player.get("tagLine")
+                or player.get("tag")
+            ).upper()
+            if player_name == name_norm and player_tag == tag_norm:
+                return player
+
+    return None
 
 
 class AlertCog(commands.Cog):
@@ -98,10 +132,10 @@ class AlertCog(commands.Cog):
 
     def _build_embed(self, entry: Dict[str, Any], match: Dict[str, Any], match_id: str) -> discord.Embed:
         metadata = match.get("metadata") or {}
-        map_name = metadata.get("map", "?")
-        mode_name = metadata.get("mode", "?")
+        map_name = metadata_label(metadata, "map")
+        mode_name = metadata_label(metadata, "mode")
         started = metadata.get("game_start_patched") or metadata.get("game_start") or "Unknown"
-        player_stats, outcome = self._extract_player_stats(entry.get("puuid"), match)
+        player_stats, outcome = self._extract_player_stats(entry, match)
 
         color = discord.Color.from_rgb(149, 165, 166)  # default grey
         result_label = "결과 정보 없음"
@@ -135,23 +169,30 @@ class AlertCog(commands.Cog):
         embed.url = f"https://tracker.gg/valorant/match/{match_id}"
         return embed
 
-    def _extract_player_stats(self, puuid: Optional[str], match: Dict[str, Any]) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
-        if not puuid:
+    def _extract_player_stats(
+        self, entry: Dict[str, Any], match: Dict[str, Any]
+    ) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+        puuid = entry.get("puuid")
+        if not puuid and not entry.get("name"):
             return None, None
+
         players = (match.get("players") or {}).get("all_players") or []
-        me = next((p for p in players if p.get("puuid") == puuid), None)
+        me = _find_player(
+            players,
+            puuid=puuid,
+            name=entry.get("name"),
+            tag=entry.get("tag"),
+        )
         if me is None:
             return None, None
 
         team = me.get("team")
         outcome = None
-        if team and isinstance(match.get("teams"), dict):
-            team_info = match["teams"].get(team) or {}
-            has_won = team_info.get("has_won")
-            if has_won is True:
-                outcome = "win"
-            elif has_won is False:
-                outcome = "loss"
+        result_flag = team_result(match.get("teams"), team)
+        if result_flag is True:
+            outcome = "win"
+        elif result_flag is False:
+            outcome = "loss"
 
         return me.get("stats") or {}, outcome
 
@@ -167,7 +208,7 @@ class AlertCog(commands.Cog):
             rounds_won = info.get("rounds_won")
             if rounds_won is None:
                 continue
-            has_won = info.get("has_won")
+            has_won = team_outcome_from_entry(info)
             label = name.title()
             if has_won is True:
                 label = "우리 팀" if outcome == "win" else "상대 팀"
