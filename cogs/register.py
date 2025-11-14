@@ -1,3 +1,5 @@
+import asyncio
+from time import monotonic
 from typing import Optional, List, Tuple, Dict, Any
 
 import discord
@@ -24,6 +26,11 @@ TIER_NOT_FOUND_LABEL = "Unrated"
 class RegisterCog(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        self._tier_cache: Dict[str, Tuple[float, Tuple[str, Optional[str]]]] = {}
+        self._tier_cache_ttl = 600.0
+        self._tier_fetch_retries = 3
+        self._tier_fetch_base_delay = 1.0
+        self._tier_fetch_semaphore = asyncio.Semaphore(5)
 
     register_alias_desc = locale_str("Alias to reference later", ko="나중에 사용할 별명")
     register_name_desc = locale_str("Riot ID name", ko="Riot ID 이름")
@@ -139,8 +146,12 @@ class RegisterCog(commands.Cog):
         await inter.response.defer()
 
         embeds_payload: List[Tuple[discord.Embed, Optional[str]]] = []
-        for rec in records:
-            tier_name, image_url = await self._fetch_tier(rec)
+
+        tier_results = await asyncio.gather(
+            *(self._fetch_tier_with_semaphore(rec) for rec in records)
+        )
+
+        for rec, (tier_name, image_url) in zip(records, tier_results):
             embed = discord.Embed(
                 description=f"**{rec['name']}#{rec['tag']}** ({rec['region'].upper()})",
                 color=discord.Color.blurple(),
@@ -161,19 +172,67 @@ class RegisterCog(commands.Cog):
 
         await self._send_alias_embeds(inter, embeds_payload)
 
+    async def _fetch_tier_with_semaphore(self, record: Dict[str, Any]) -> Tuple[str, Optional[str]]:
+        async with self._tier_fetch_semaphore:
+            return await self._fetch_tier(record)
+
+    def _tier_cache_key(self, record: Dict[str, Any]) -> str:
+        region = (record.get("region") or "ap").lower()
+        name = (record.get("name") or "").lower()
+        tag = (record.get("tag") or "").lower()
+        return f"{region}:{name}:{tag}"
+
+    def _get_cached_tier(self, key: str) -> Optional[Tuple[str, Optional[str]]]:
+        cached = self._tier_cache.get(key)
+        if not cached:
+            return None
+
+        expires_at, value = cached
+        if expires_at >= monotonic():
+            return value
+
+        self._tier_cache.pop(key, None)
+        return None
+
+    def _store_tier_cache(self, key: str, value: Tuple[str, Optional[str]]) -> None:
+        self._tier_cache[key] = (monotonic() + self._tier_cache_ttl, value)
+
     async def _fetch_tier(self, record: Dict[str, Any]) -> Tuple[str, Optional[str]]:
+        cache_key = self._tier_cache_key(record)
+        cached_value = self._get_cached_tier(cache_key)
+        if cached_value is not None:
+            return cached_value
+
         name = record.get("name", "")
         tag = record.get("tag", "")
         region = record.get("region", "ap")
-        try:
-            mmr = await http_get(f"{HENRIK_BASE}/v2/mmr/{region}/{q(name)}/{q(tag)}")
-            data = (mmr.get("data") or {}).get("current_data") or {}
-            tier_name = data.get("currenttierpatched") or TIER_NOT_FOUND_LABEL
-            images = data.get("images") or {}
-            image_url = images.get("small")
-            return tier_name, image_url
-        except Exception:
-            return TIER_NOT_FOUND_LABEL, None
+        delay = self._tier_fetch_base_delay
+        for attempt in range(self._tier_fetch_retries):
+            try:
+                mmr = await http_get(f"{HENRIK_BASE}/v2/mmr/{region}/{q(name)}/{q(tag)}")
+                data = (mmr.get("data") or {}).get("current_data") or {}
+                tier_name = data.get("currenttierpatched") or TIER_NOT_FOUND_LABEL
+                images = data.get("images") or {}
+                image_url = images.get("small")
+                result = (tier_name, image_url)
+                self._store_tier_cache(cache_key, result)
+                return result
+            except Exception as exc:
+                is_last_attempt = attempt == self._tier_fetch_retries - 1
+                if is_last_attempt:
+                    break
+
+                error_text = str(exc)
+                backoff_delay = delay
+                if "429" in error_text:
+                    backoff_delay *= 2
+
+                await asyncio.sleep(backoff_delay)
+                delay *= 2
+
+        fallback = (TIER_NOT_FOUND_LABEL, None)
+        self._store_tier_cache(cache_key, fallback)
+        return fallback
 
     def _local_tier_image(self, tier_name: Optional[str]):
         key = tier_key(tier_name or TIER_NOT_FOUND_LABEL)
