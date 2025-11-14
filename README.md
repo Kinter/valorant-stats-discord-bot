@@ -15,7 +15,7 @@ This project is **unofficial** and uses the [HenrikDev API](https://docs.henrikd
 - `/최근경기` : Show recent matches with map/mode/W-L/KDA summary (alias based)
 - `/최근전적요약` : Show summarized stats (win rate, KD, tier image, fun comment)
 - `/요원정보` : Get information about agents
-- `/resync` : Force resync of slash commands (owner only)
+- `/명령동기화` : Force resync of slash commands (owner only)
 
 ---
 
@@ -68,7 +68,7 @@ Set `LOG_LEVEL=DEBUG` if you need more verbose console logs while running the bo
 ### 5. Run the bot
 
 ```bash
-python -m bot.py
+python bot.py
 ```
 
 ### 6. Register aliases
