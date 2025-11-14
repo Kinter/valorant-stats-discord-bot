@@ -79,7 +79,7 @@ class AlertCog(commands.Cog):
 
         stored = store_match_batch(owner_key, puuid, [match])
         if stored == 0:
-            # Already persisted previously; avoid duplicate alerts
+            # store_match_batch returns the number of newly inserted rows; zero means this match was already persisted.
             self._last_seen[owner_key] = match_id
             return
 

@@ -9,15 +9,16 @@ This project is **unofficial** and uses the [HenrikDev API](https://docs.henrikd
 
 ## Features
 
-- `/별명등록` (legacy `/register`) : Register a Riot ID under a shared alias (required for stat commands)
-- `/별명삭제` (legacy `/unregister`) : Remove a previously registered alias
-- `/별명목록` (legacy `/aliases`) : List registered aliases
-- `/프로필` (legacy `/vprofile`) : View profile and MMR for a registered alias
-- `/최근경기` (legacy `/vmatches`) : Show recent matches with map/mode/W-L/KDA summary (alias based)
-- `/최근전적요약` (legacy `/vsummary`) : Show summarized stats (win rate, KD, tier image, fun comment)
-- `/요원정보` (legacy `/vagent`) : Get information about agents
-- `/명령동기화` (legacy `/resync`) : Force resync of slash commands (owner only)
-- `/알림채널설정` / `/알림채널해제` : Configure live match alert channels for the server
+- `/별명등록` : Register a Riot ID under a shared alias (required for stat commands)
+- `/별명삭제` : Remove a previously registered alias
+- `/별명목록` : List registered aliases
+- `/프로필` : View profile and MMR for a registered alias
+- `/최근경기` : Show recent matches with map/mode/W-L/KDA summary (alias based)
+- `/최근전적요약` : Show summarized stats (win rate, KD, tier image, fun comment)
+- `/요원정보` : Get information about agents
+- `/명령동기화` : Force resync of slash commands (owner only)
+- `/알림채널설정` : Set the live match alert channel
+- `/알림채널해제` : Clear the live match alert channel setting
 
 ---
 
@@ -69,14 +70,18 @@ Set `LOG_LEVEL=DEBUG` if you need more verbose console logs while running the bo
 
 ### 5. Run the bot
 
+Run the project entrypoint (`bot.py`) with Python:
+
 ```bash
-python -m bot.py
+python bot.py
 ```
+
+> Alternatively, you can use the module form `python -m bot` if you prefer.
 
 ### 6. Register aliases
 
-Use `/별명등록 alias name tag region` in Discord to store a Riot ID under a friendly alias.
-All stat commands (`/최근전적요약`, `/프로필`, `/최근경기`; legacy `/vsummary`, `/vprofile`, `/vmatches`) now require an alias.
+Use `/별명등록 alias name tag region` in Discord to store a Riot ID under a friendly alias.  
+All stat commands (`/최근전적요약`, `/프로필`, `/최근경기`) now require an alias.
 Each fetch caches the latest match data in `data/bot.sqlite3` for later inspection.
 
 ---

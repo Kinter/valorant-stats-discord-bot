@@ -6,10 +6,12 @@ from discord import app_commands
 from discord.app_commands import locale_str
 from discord.ext import commands
 
+from core.api import fetch_player_info
 from core.config import HENRIK_BASE, TIERS_DIR
 from core.http import http_get
 from core.store import get_alias, search_aliases, store_match_batch
 from core.utils import (
+    ALIAS_REGISTRATION_PROMPT,
     alias_display,
     check_cooldown,
     clean_text,
@@ -65,7 +67,7 @@ class SummaryCog(commands.Cog):
         alias_input = clean_text(target)
         if not alias_input:
             await inter.response.send_message(
-                "별명을 입력해 주세요. 먼저 `/별명등록` 명령으로 Riot ID를 등록할 수 있습니다.",
+                ALIAS_REGISTRATION_PROMPT,
                 ephemeral=True,
             )
             return
@@ -84,13 +86,9 @@ class SummaryCog(commands.Cog):
 
         await inter.response.defer()
         try:
-            acc = await http_get(f"{HENRIK_BASE}/v1/account/{q(name)}/{q(tag)}")
-            puuid = (acc.get("data") or {}).get("puuid")
-            if not puuid:
-                raise RuntimeError("Puuid missing in HenrikDev response")
-
-            mmr = await http_get(f"{HENRIK_BASE}/v2/mmr/{region}/{q(name)}/{q(tag)}")
-            cur = (mmr.get("data") or {}).get("current_data") or {}
+            info = await fetch_player_info(name, tag, region=region)
+            puuid = info["puuid"]
+            cur = info.get("current_mmr") or {}
             tier_name = cur.get("currenttierpatched") or "Unrated"
             rr = cur.get("ranking_in_tier", 0)
 
