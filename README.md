@@ -70,9 +70,13 @@ Set `LOG_LEVEL=DEBUG` if you need more verbose console logs while running the bo
 
 ### 5. Run the bot
 
+Run the project entrypoint (`bot.py`) with Python:
+
 ```bash
 python bot.py
 ```
+
+> Alternatively, you can use the module form `python -m bot` if you prefer.
 
 ### 6. Register aliases
 
