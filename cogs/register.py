@@ -1,3 +1,4 @@
+import asyncio
 from typing import Optional, List, Tuple, Dict, Any
 
 import discord
@@ -139,8 +140,19 @@ class RegisterCog(commands.Cog):
         await inter.response.defer()
 
         embeds_payload: List[Tuple[discord.Embed, Optional[str]]] = []
-        for rec in records:
-            tier_name, image_url = await self._fetch_tier(rec)
+
+        semaphore = asyncio.Semaphore(5)
+
+        async def fetch_tier(record: Dict[str, Any]) -> Tuple[str, Optional[str]]:
+            async with semaphore:
+                try:
+                    return await self._fetch_tier(record)
+                except Exception:
+                    return TIER_NOT_FOUND_LABEL, None
+
+        tier_results = await asyncio.gather(*(fetch_tier(rec) for rec in records))
+
+        for rec, (tier_name, image_url) in zip(records, tier_results):
             embed = discord.Embed(
                 description=f"**{rec['name']}#{rec['tag']}** ({rec['region'].upper()})",
                 color=discord.Color.blurple(),
