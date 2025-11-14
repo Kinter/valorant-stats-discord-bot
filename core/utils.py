@@ -2,6 +2,10 @@ import time
 import urllib.parse
 from typing import Optional, Dict, Any
 
+ALIAS_REGISTRATION_PROMPT = (
+    "별명을 입력해 주세요. 먼저 `/별명등록` 명령으로 Riot ID를 등록할 수 있습니다."
+)
+
 REGIONS = {"ap","kr","eu","na","br","latam"}
 _COOLDOWN_SEC = 5
 _last_used: dict[int, float] = {}
