@@ -5,16 +5,15 @@ from discord import app_commands
 from discord.app_commands import locale_str
 from discord.ext import commands
 
-from core.config import HENRIK_BASE
-from core.http import http_get
+from core.api import fetch_player_info
 from core.store import get_alias, search_aliases
 from core.utils import (
+    ALIAS_REGISTRATION_PROMPT,
     alias_display,
     check_cooldown,
     clean_text,
     format_exception_message,
     is_account_not_found_error,
-    q,
 )
 
 
@@ -43,7 +42,7 @@ class ProfileCog(commands.Cog):
         alias_input = clean_text(target)
         if not alias_input:
             await inter.response.send_message(
-                "별명을 입력해 주세요. 먼저 `/별명등록` 명령으로 Riot ID를 등록할 수 있습니다.",
+                ALIAS_REGISTRATION_PROMPT,
                 ephemeral=True,
             )
             return
@@ -61,14 +60,12 @@ class ProfileCog(commands.Cog):
 
         await inter.response.defer()
         try:
-            acc = await http_get(f"{HENRIK_BASE}/v1/account/{q(name)}/{q(tag)}")
-            data = acc.get("data", {}) or {}
+            info = await fetch_player_info(name, tag, region=region)
+            data = info.get("account") or {}
             card = data.get("card", {}) or {}
             level = data.get("account_level", 0)
             title = data.get("title") or ""
-
-            mmr = await http_get(f"{HENRIK_BASE}/v2/mmr/{region}/{q(name)}/{q(tag)}")
-            cur = (mmr.get("data") or {}).get("current_data") or {}
+            cur = info.get("current_mmr") or {}
             tier = cur.get("currenttierpatched") or "Unrated"
             rr = cur.get("ranking_in_tier", 0)
 

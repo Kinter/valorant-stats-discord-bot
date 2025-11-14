@@ -189,6 +189,7 @@ def search_aliases(query: str | None = None, limit: int = 25) -> List[Dict[str, 
 def store_match_batch(owner_key: str, puuid: str, matches: Iterable[Dict[str, Any]]) -> int:
     now = int(time.time())
     rows: List[Tuple[Any, ...]] = []
+    match_ids: List[str] = []
     for match in matches:
         metadata = (match.get("metadata") or {}) if isinstance(match, dict) else {}
         match_id = (
@@ -239,11 +240,28 @@ def store_match_batch(owner_key: str, puuid: str, matches: Iterable[Dict[str, An
                 now,
             )
         )
+        match_ids.append(match_id)
 
     if not rows:
         return 0
 
+    unique_match_ids = list(dict.fromkeys(match_ids))
+
     with _connect() as conn:
+        existing_ids: set[str] = set()
+        if unique_match_ids:
+            chunk_size = 500
+            for i in range(0, len(unique_match_ids), chunk_size):
+                chunk = unique_match_ids[i : i + chunk_size]
+                placeholders = ",".join("?" for _ in chunk)
+                query = (
+                    f"SELECT match_id FROM match_cache "
+                    f"WHERE owner_key = ? AND match_id IN ({placeholders})"
+                )
+                params: List[Any] = [owner_key, *chunk]
+                rows_existing = conn.execute(query, params).fetchall()
+                existing_ids.update(row["match_id"] for row in rows_existing)
+
         conn.executemany(
             """
             INSERT INTO match_cache (
@@ -266,7 +284,8 @@ def store_match_batch(owner_key: str, puuid: str, matches: Iterable[Dict[str, An
             """,
             rows,
         )
-    return len(rows)
+    new_rows = [mid for mid in unique_match_ids if mid not in existing_ids]
+    return len(new_rows)
 
 
 def latest_match(owner_key: str) -> Dict[str, Any] | None:
