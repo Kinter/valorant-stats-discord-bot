@@ -8,6 +8,10 @@ load_dotenv()
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN") or ""
 HENRIK_API_KEY = os.getenv("HENRIK_API_KEY") or ""
 LOG_LEVEL = (os.getenv("LOG_LEVEL") or "INFO").upper()
+try:
+    HTTP_TIMEOUT = float(os.getenv("HTTP_TIMEOUT") or 20)
+except ValueError:
+    HTTP_TIMEOUT = 20.0
 _guild_id_raw = os.getenv("GUILD_ID")
 #_guild_id_raw = os.getenv()
 if _guild_id_raw:

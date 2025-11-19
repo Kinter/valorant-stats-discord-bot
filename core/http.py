@@ -1,10 +1,11 @@
+import asyncio
 import json
 import logging
 from typing import Optional, Dict, Any
 
 import aiohttp
 
-from .config import HENRIK_API_KEY
+from .config import HENRIK_API_KEY, HTTP_TIMEOUT
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,9 @@ async def ensure_session() -> aiohttp.ClientSession:
     global _session
     if _session is None or _session.closed:
         logger.debug("Creating new aiohttp ClientSession")
-        _session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15))
+        _session = aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=HTTP_TIMEOUT)
+        )
     return _session
 
 
@@ -49,27 +52,33 @@ async def http_get(
         hdrs["Authorization"] = HENRIK_API_KEY
 
     logger.info("HTTP GET %s params=%s", url, params)
-    async with sess.get(url, params=params, headers=hdrs) as response:
-        text = await response.text()
-        if response.status != 200:
-            detail = _extract_error_detail(text)
-            logger.error(
-                "HTTP GET failed %s -> %s %s | detail=%s",
-                url,
-                response.status,
-                response.reason,
-                detail,
-            )
-            raise RuntimeError(f"GET {url} -> {response.status} {response.reason}: {detail}")
+    try:
+        async with sess.get(url, params=params, headers=hdrs) as response:
+            text = await response.text()
+            if response.status != 200:
+                detail = _extract_error_detail(text)
+                logger.error(
+                    "HTTP GET failed %s -> %s %s | detail=%s",
+                    url,
+                    response.status,
+                    response.reason,
+                    detail,
+                )
+                raise RuntimeError(
+                    f"GET {url} -> {response.status} {response.reason}: {detail}"
+                )
 
-        try:
-            payload = json.loads(text)
-        except json.JSONDecodeError:
-            logger.error("Invalid JSON from %s: %s", url, text[:240])
-            raise RuntimeError(f"Invalid JSON from {url}: {text[:120]}")
+            try:
+                payload = json.loads(text)
+            except json.JSONDecodeError:
+                logger.error("Invalid JSON from %s: %s", url, text[:240])
+                raise RuntimeError(f"Invalid JSON from {url}: {text[:120]}")
 
-        logger.debug("HTTP GET success %s (%s bytes)", url, len(text))
-        return payload
+            logger.debug("HTTP GET success %s (%s bytes)", url, len(text))
+            return payload
+    except asyncio.TimeoutError as exc:
+        logger.error("HTTP GET timeout for %s", url)
+        raise RuntimeError("Request to Valorant API timed out. Please try again later.") from exc
 
 
 async def close_session():
