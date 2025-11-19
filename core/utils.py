@@ -1,6 +1,7 @@
 import time
 import urllib.parse
-from typing import Any, Dict, Mapping, Optional
+from collections.abc import Mapping, Sequence
+from typing import Any, Dict, Optional
 
 ALIAS_REGISTRATION_PROMPT = (
     "별명을 입력해 주세요. 먼저 `/별명등록` 명령으로 Riot ID를 등록할 수 있습니다."
@@ -132,12 +133,60 @@ def team_outcome_from_entry(entry: Mapping[str, Any] | None) -> Optional[bool]:
     return result
 
 
+def _register_team_entry(
+    registry: Dict[str, Mapping[str, Any]], key: Any, entry: Mapping[str, Any]
+) -> None:
+    if key is None:
+        return
+
+    key_str = str(key)
+    if not key_str:
+        return
+
+    base = clean_text(key_str)
+    if not base:
+        return
+
+    variants = {key_str, base, base.lower(), base.upper(), base.capitalize()}
+    for variant in variants:
+        if variant:
+            registry[variant] = entry
+
+
 def team_result(teams: Mapping[str, Any] | None, team_name: Optional[str]) -> Optional[bool]:
-    if not isinstance(teams, Mapping) or not team_name:
+    if not team_name:
         return None
 
     team_clean = clean_text(team_name)
     if not team_clean:
+        return None
+
+    entries: Dict[str, Mapping[str, Any]] = {}
+
+    if isinstance(teams, Mapping):
+        for key, value in teams.items():
+            if isinstance(value, Mapping):
+                _register_team_entry(entries, key, value)
+    elif isinstance(teams, Sequence) and not isinstance(teams, (str, bytes, bytearray)):
+        for value in teams:
+            if not isinstance(value, Mapping):
+                continue
+            key_candidates = (
+                value.get("team"),
+                value.get("team_name"),
+                value.get("name"),
+                value.get("id"),
+                value.get("team_id"),
+                value.get("side"),
+            )
+            for candidate in key_candidates:
+                if candidate:
+                    _register_team_entry(entries, candidate, value)
+                    break
+    else:
+        return None
+
+    if not entries:
         return None
 
     candidates = (
@@ -151,15 +200,15 @@ def team_result(teams: Mapping[str, Any] | None, team_name: Optional[str]) -> Op
     for key in candidates:
         if not key:
             continue
-        entry = teams.get(key)
+        entry = entries.get(key)
+        if not entry:
+            continue
         result = team_outcome_from_entry(entry)
         if result is not None:
             return result
 
     target = team_clean.lower()
-    for key, value in teams.items():
-        if not isinstance(value, Mapping):
-            continue
+    for key, value in entries.items():
         if clean_text(str(key)).lower() == target:
             result = team_outcome_from_entry(value)
             if result is not None:
